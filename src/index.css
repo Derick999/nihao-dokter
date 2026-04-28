@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+body,
+nav {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+nav {
+  margin-bottom: 0 !important;
+  border-bottom: none !important;
+}
+
+#hero-section {
+  margin-top: -1px !important;
+  position: relative;
+  overflow: hidden;
+}
