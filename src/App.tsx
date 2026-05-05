@@ -11,6 +11,7 @@ import Artikel from './pages/Artikel';
 import Layanan from './pages/Layanan';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import PaymentSuccess from './pages/PaymentSuccess';
 import { DoctorProfile } from './data/doctors';
 import { getStoredUser, logoutUser, StoredUser } from './utils/auth';
 
@@ -88,6 +89,7 @@ function AppShell() {
         <Route path="/" element={<Home onOpenChat={handleOpenChat} />} />
         <Route path="/layanan" element={<Layanan onOpenChat={handleOpenChat} />} />
         <Route path="/shop" element={<Shop />} />
+        <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/artikel" element={<Artikel />} />
         <Route path="/login" element={<Login onAuthSuccess={handleAuthSuccess} />} />
         <Route path="/register" element={<Register onAuthSuccess={handleAuthSuccess} />} />
@@ -100,7 +102,6 @@ function AppShell() {
           <NihaoAIWidget
             isOpen={isAiOpen}
             onClose={() => setIsAiOpen(false)}
-            onSelectDoctor={(doctor) => handleOpenChat(doctor)}
           />
         </>
       )}

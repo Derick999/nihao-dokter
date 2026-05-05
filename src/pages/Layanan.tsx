@@ -1,5 +1,7 @@
-import { Activity, HeartPulse, MessageCircle, ShoppingBag, Sparkles, Scale, Ruler } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { Activity, Droplets, GlassWater, HeartPulse, MessageCircle, ShoppingBag, Sparkles, Scale, Ruler, Flame } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { doctors } from '../data/doctors';
 import { getStoredUser } from '../utils/auth';
 
@@ -18,6 +20,95 @@ export default function Layanan({ onOpenChat }: LayananProps) {
   const bmi = hasPhysicalData ? rawWeight / ((rawHeight / 100) * (rawHeight / 100)) : null;
   const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
   const isDataIncomplete = Boolean(user) && !hasPhysicalData;
+  const [waterIntakeMl, setWaterIntakeMl] = useState(0);
+  const [bmiSnapshot, setBmiSnapshot] = useState<number | null>(null);
+  const [calculatorInput, setCalculatorInput] = useState({
+    weight: hasPhysicalData ? String(rawWeight) : '',
+    height: hasPhysicalData ? String(rawHeight) : '',
+    age: '',
+    gender: 'male',
+    activityLevel: 'sedentary',
+  });
+  const [bmrResult, setBmrResult] = useState<number | null>(null);
+  const [tdeeResult, setTdeeResult] = useState<number | null>(null);
+
+  useEffect(() => {
+    const storedWater = Number.parseInt(localStorage.getItem('health_water_intake_ml') || '0', 10);
+    const storedBmi = localStorage.getItem('health_bmi_snapshot');
+    const storedBmr = localStorage.getItem('health_bmr_result');
+    const storedTdee = localStorage.getItem('health_tdee_result');
+    const storedInputs = localStorage.getItem('health_bmr_form');
+
+    if (Number.isFinite(storedWater) && storedWater > 0) {
+      setWaterIntakeMl(storedWater);
+    }
+    if (storedBmi) {
+      const parsedBmi = Number.parseFloat(storedBmi);
+      if (Number.isFinite(parsedBmi)) {
+        setBmiSnapshot(parsedBmi);
+      }
+    }
+    if (storedBmr) {
+      const parsedBmr = Number.parseFloat(storedBmr);
+      if (Number.isFinite(parsedBmr)) {
+        setBmrResult(parsedBmr);
+      }
+    }
+    if (storedTdee) {
+      const parsedTdee = Number.parseFloat(storedTdee);
+      if (Number.isFinite(parsedTdee)) {
+        setTdeeResult(parsedTdee);
+      }
+    }
+    if (storedInputs) {
+      try {
+        const parsedInputs = JSON.parse(storedInputs) as typeof calculatorInput;
+        setCalculatorInput((current) => ({ ...current, ...parsedInputs }));
+      } catch {
+        // Ignore invalid stored form data.
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (bmi !== null) {
+      setBmiSnapshot(bmi);
+    }
+  }, [bmi]);
+
+  useEffect(() => {
+    localStorage.setItem('health_water_intake_ml', String(waterIntakeMl));
+  }, [waterIntakeMl]);
+
+  useEffect(() => {
+    if (bmiSnapshot !== null) {
+      localStorage.setItem('health_bmi_snapshot', bmiSnapshot.toFixed(2));
+    }
+  }, [bmiSnapshot]);
+
+  useEffect(() => {
+    localStorage.setItem('health_bmr_form', JSON.stringify(calculatorInput));
+  }, [calculatorInput]);
+
+  useEffect(() => {
+    if (bmrResult !== null) {
+      localStorage.setItem('health_bmr_result', bmrResult.toFixed(0));
+    }
+    if (tdeeResult !== null) {
+      localStorage.setItem('health_tdee_result', tdeeResult.toFixed(0));
+    }
+  }, [bmrResult, tdeeResult]);
+
+  const waterGoalMl = 2000;
+  const waterProgress = Math.min((waterIntakeMl / waterGoalMl) * 100, 100);
+
+  const activityMultipliers: Record<string, number> = {
+    sedentary: 1.2,
+    lightlyActive: 1.375,
+    moderatelyActive: 1.55,
+    veryActive: 1.725,
+    extraActive: 1.9,
+  };
 
   const bmiStatus = (() => {
     if (!isLoggedIn) {
@@ -26,13 +117,17 @@ export default function Layanan({ onOpenChat }: LayananProps) {
     if (isDataIncomplete) {
       return { label: 'Data belum lengkap', color: 'bg-sky-100 text-sky-700' };
     }
-    if (bmi < 18.5) {
+    const currentBmi = bmiSnapshot ?? bmi;
+    if (currentBmi === null) {
+      return { label: 'Data belum lengkap', color: 'bg-sky-100 text-sky-700' };
+    }
+    if (currentBmi < 18.5) {
       return { label: 'Berat Rendah', color: 'bg-amber-100 text-amber-700' };
     }
-    if (bmi < 25) {
+    if (currentBmi < 25) {
       return { label: 'Normal/Ideal', color: 'bg-emerald-100 text-emerald-700' };
     }
-    if (bmi < 30) {
+    if (currentBmi < 30) {
       return { label: 'Berat Berlebih', color: 'bg-orange-100 text-orange-700' };
     }
     return { label: 'Obesitas', color: 'bg-red-100 text-red-700' };
@@ -45,17 +140,54 @@ export default function Layanan({ onOpenChat }: LayananProps) {
     if (isDataIncomplete) {
       return 'Profilmu sudah tersimpan, tapi tinggi dan berat badan belum lengkap. Lengkapi dulu untuk mendapat insight personal.';
     }
-    if (bmi < 18.5) {
+    const currentBmi = bmiSnapshot ?? bmi;
+    if (currentBmi === null) {
+      return 'Lengkapi tinggi dan berat badanmu untuk mendapatkan saran personal dari Nihao AI.';
+    }
+    if (currentBmi < 18.5) {
       return 'Tingkatkan asupan nutrisi seimbang dan pertimbangkan konsultasi untuk optimasi berat badan.';
     }
-    if (bmi < 25) {
+    if (currentBmi < 25) {
       return 'Pertahankan pola makan sehat, tidur cukup, dan aktivitas fisik rutin agar tetap ideal.';
     }
-    if (bmi < 30) {
+    if (currentBmi < 30) {
       return 'Jaga pola makan, perbanyak aktivitas ringan, dan pantau berat badan secara berkala.';
     }
     return 'Mulai perubahan bertahap pada pola makan dan konsultasikan target kesehatan dengan dokter.';
   })();
+
+  const calorieAdvice = useMemo(() => {
+    if (tdeeResult === null) {
+      return 'Isi data dan hitung dulu untuk mendapatkan rekomendasi kebutuhan kalori harian.';
+    }
+    if (tdeeResult < 1800) {
+      return 'Kebutuhan kalori harianmu cenderung rendah. Fokus pada kualitas nutrisi dan asupan protein cukup.';
+    }
+    if (tdeeResult < 2400) {
+      return 'Kebutuhan kalori harianmu berada di rentang moderat. Jaga keseimbangan karbohidrat, protein, dan lemak sehat.';
+    }
+    return 'Kebutuhan kalori harianmu cukup tinggi. Pastikan energi tercukupi dengan makanan utuh dan hidrasi optimal.';
+  }, [tdeeResult]);
+
+  const handleCalculateBmr = () => {
+    const weight = Number.parseFloat(calculatorInput.weight);
+    const height = Number.parseFloat(calculatorInput.height);
+    const age = Number.parseFloat(calculatorInput.age);
+    const activityMultiplier = activityMultipliers[calculatorInput.activityLevel] ?? 1.2;
+
+    if (!Number.isFinite(weight) || !Number.isFinite(height) || !Number.isFinite(age)) {
+      return;
+    }
+
+    // Mifflin-St Jeor Equation.
+    const baseBmr = 10 * weight + 6.25 * height - 5 * age;
+    const genderConstant = calculatorInput.gender === 'male' ? 5 : -161;
+    const totalBmr = baseBmr + genderConstant;
+    const totalTdee = totalBmr * activityMultiplier;
+
+    setBmrResult(totalBmr);
+    setTdeeResult(totalTdee);
+  };
 
   return (
     <main className="flex-grow bg-white">
@@ -86,7 +218,7 @@ export default function Layanan({ onOpenChat }: LayananProps) {
                     <Scale className="h-6 w-6" />
                   </div>
                   <h3 className="text-lg font-bold text-gray-900">Indeks Massa Tubuh (BMI)</h3>
-                  <p className="mt-4 text-4xl font-extrabold text-[#268489]">{bmi !== null ? bmi.toFixed(1) : 'Data belum lengkap'}</p>
+                  <p className="mt-4 text-4xl font-extrabold text-[#268489]">{bmiSnapshot !== null ? bmiSnapshot.toFixed(1) : 'Data belum lengkap'}</p>
                   <span className={`mt-4 inline-flex rounded-full px-3 py-1 text-sm font-medium ${bmiStatus.color}`}>
                     {bmiStatus.label}
                   </span>
@@ -139,6 +271,130 @@ export default function Layanan({ onOpenChat }: LayananProps) {
                   >
                     Ke Nihao Shop
                   </Link>
+                </div>
+              </div>
+
+              <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+                <div className="rounded-2xl border border-white bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+                  <div className="mb-5 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EAF7F4] text-[#268489]">
+                        <Droplets className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">Water Intake</h3>
+                        <p className="text-sm text-gray-500">Target harian: {waterGoalMl} ml</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setWaterIntakeMl((current) => current + 250)}
+                      className="rounded-full bg-[#268489] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#1f6f73]"
+                    >
+                      +250 ml
+                    </button>
+                  </div>
+
+                  <div className="mb-5 flex items-end gap-5">
+                    <div className="relative h-40 w-24 overflow-hidden rounded-2xl border border-[#d8eeea] bg-[#ecf8f5]">
+                      <motion.div
+                        className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#268489] to-[#5ab6bc]"
+                        initial={{ height: '0%' }}
+                        animate={{ height: `${waterProgress}%` }}
+                        transition={{ duration: 0.45, ease: 'easeOut' }}
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center text-white/90">
+                        <GlassWater className="h-7 w-7" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-3xl font-extrabold text-[#268489]">{waterIntakeMl} ml</p>
+                      <p className="mt-1 text-sm text-gray-500">Progress {Math.round(waterProgress)}%</p>
+                    </div>
+                  </div>
+
+                  <div className="h-3 w-full overflow-hidden rounded-full bg-gray-100">
+                    <motion.div
+                      className="h-full rounded-full bg-[#268489]"
+                      initial={{ width: '0%' }}
+                      animate={{ width: `${waterProgress}%` }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md">
+                  <div className="mb-5 flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EAF7F4] text-[#268489]">
+                      <Flame className="h-6 w-6" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-900">BMR & TDEE Calculator</h3>
+                      <p className="text-sm text-gray-500">Hitung kebutuhan kalori harian secara akurat</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="Weight (kg)"
+                      value={calculatorInput.weight}
+                      onChange={(event) => setCalculatorInput((current) => ({ ...current, weight: event.target.value }))}
+                      className="h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 outline-none transition focus:border-[#268489] focus:bg-white focus:ring-4 focus:ring-teal-100"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="Height (cm)"
+                      value={calculatorInput.height}
+                      onChange={(event) => setCalculatorInput((current) => ({ ...current, height: event.target.value }))}
+                      className="h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 outline-none transition focus:border-[#268489] focus:bg-white focus:ring-4 focus:ring-teal-100"
+                    />
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="Age (years)"
+                      value={calculatorInput.age}
+                      onChange={(event) => setCalculatorInput((current) => ({ ...current, age: event.target.value }))}
+                      className="h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 outline-none transition focus:border-[#268489] focus:bg-white focus:ring-4 focus:ring-teal-100"
+                    />
+                    <select
+                      value={calculatorInput.gender}
+                      onChange={(event) => setCalculatorInput((current) => ({ ...current, gender: event.target.value }))}
+                      className="h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 outline-none transition focus:border-[#268489] focus:bg-white focus:ring-4 focus:ring-teal-100"
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                    <select
+                      value={calculatorInput.activityLevel}
+                      onChange={(event) => setCalculatorInput((current) => ({ ...current, activityLevel: event.target.value }))}
+                      className="h-11 rounded-xl border border-gray-200 bg-gray-50 px-3 text-sm text-gray-700 outline-none transition focus:border-[#268489] focus:bg-white focus:ring-4 focus:ring-teal-100 sm:col-span-2"
+                    >
+                      <option value="sedentary">Sedentary (jarang olahraga)</option>
+                      <option value="lightlyActive">Lightly Active (1-3x/minggu)</option>
+                      <option value="moderatelyActive">Moderately Active (3-5x/minggu)</option>
+                      <option value="veryActive">Very Active (6-7x/minggu)</option>
+                      <option value="extraActive">Extra Active (aktivitas berat harian)</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleCalculateBmr}
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-xl bg-[#268489] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1f6f73]"
+                  >
+                    Hitung BMR & TDEE
+                  </button>
+
+                  <div className="mt-4 rounded-xl bg-[#f6fbfa] p-4">
+                    <p className="text-sm text-gray-500">BMR</p>
+                    <p className="text-2xl font-extrabold text-[#268489]">{bmrResult !== null ? `${Math.round(bmrResult)} kkal` : '-'}</p>
+                    <p className="mt-3 text-sm text-gray-500">TDEE (Daily Calories)</p>
+                    <p className="text-2xl font-extrabold text-[#0D503C]">{tdeeResult !== null ? `${Math.round(tdeeResult)} kkal` : '-'}</p>
+                    <p className="mt-3 text-sm text-gray-600">{calorieAdvice}</p>
+                  </div>
                 </div>
               </div>
             </>

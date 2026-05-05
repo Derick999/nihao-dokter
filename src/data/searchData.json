@@ -1,0 +1,23 @@
+{
+  "doctors": [
+    { "id": "doc-1", "name": "Dr. Sarah Wijaya", "specialty": "Dokter Umum", "link": "/layanan" },
+    { "id": "doc-2", "name": "Dr. Budi Santoso", "specialty": "Penyakit Dalam", "link": "/layanan" },
+    { "id": "doc-3", "name": "Dr. Rina Putri", "specialty": "Dokter Anak", "link": "/layanan" },
+    { "id": "doc-4", "name": "Dr. Andi Pratama", "specialty": "Dokter Kulit", "link": "/layanan" },
+    { "id": "doc-5", "name": "Dr. Kevin Halim", "specialty": "Dokter Saraf", "link": "/layanan" }
+  ],
+  "medicine": [
+    { "id": "med-1", "name": "Paracetamol 500mg", "usage": "Demam dan nyeri ringan", "link": "/shop" },
+    { "id": "med-2", "name": "Oralit", "usage": "Dehidrasi ringan", "link": "/shop" },
+    { "id": "med-3", "name": "Antasida", "usage": "Asam lambung", "link": "/shop" },
+    { "id": "med-4", "name": "Vitamin C", "usage": "Daya tahan tubuh", "link": "/shop" },
+    { "id": "med-5", "name": "Obat Batuk Herbal", "usage": "Batuk dan tenggorokan gatal", "link": "/shop" }
+  ],
+  "articles": [
+    { "id": "art-1", "title": "Cara Menangani Demam di Rumah", "topic": "Demam", "link": "/artikel" },
+    { "id": "art-2", "title": "Tips Menjaga Kesehatan Lambung", "topic": "Pencernaan", "link": "/artikel" },
+    { "id": "art-3", "title": "Panduan Pertolongan Pertama Sakit Kepala", "topic": "Neurologi", "link": "/artikel" },
+    { "id": "art-4", "title": "Pola Tidur dan Imunitas Tubuh", "topic": "Gaya Hidup", "link": "/artikel" },
+    { "id": "art-5", "title": "Kapan Harus Konsultasi ke Dokter?", "topic": "Edukasi Pasien", "link": "/artikel" }
+  ]
+}

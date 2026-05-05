@@ -1,7 +1,8 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Search, ShoppingBag, Menu, X, House, BookOpen, HeartPulse, LogOut, User } from 'lucide-react';
+import { ShoppingBag, Menu, X, House, BookOpen, HeartPulse, LogOut, User } from 'lucide-react';
 import { useState } from 'react';
 import { StoredUser } from '../utils/auth';
+import SearchBar from './SearchBar';
 
 type NavbarProps = {
   currentUser: StoredUser | null;
@@ -32,14 +33,7 @@ export default function Navbar({ currentUser, onLogout }: NavbarProps) {
               </span>
             </Link>
 
-            <div className="relative hidden max-w-xl flex-1 md:block">
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Cari gejala, dokter, atau obat..."
-                className="h-11 w-full rounded-full border border-gray-200 bg-gray-50 pl-11 pr-4 text-sm text-gray-700 outline-none transition focus:border-[#268489] focus:bg-white focus:ring-4 focus:ring-teal-100"
-              />
-            </div>
+            <SearchBar />
           </div>
 
           {/* Desktop Menu */}

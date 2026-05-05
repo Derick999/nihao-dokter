@@ -1,55 +1,81 @@
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Bot, Send, Sparkles, X } from 'lucide-react';
-import { DoctorProfile, getAiRecommendations } from '../data/doctors';
+import { Link } from 'react-router-dom';
+import diseasesData from '../data/diseases.json';
 
 type AiMessage = {
   id: number;
   sender: 'ai' | 'user';
   text: string;
-  recommendations?: DoctorProfile[];
+  matches?: Disease[];
+  ctaLink?: '/shop' | '/doctors';
 };
 
 type NihaoAIWidgetProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSelectDoctor: (doctor: DoctorProfile) => void;
 };
 
-const getAiResponse = (message: string) => {
-  const input = message.toLowerCase();
+type TriageCategory = 'Head' | 'Stomach' | 'Others';
 
-  if (/(meriang|demam|panas)/.test(input)) {
-    return 'Keluhan demam atau meriang biasanya perlu istirahat cukup, cairan yang memadai, dan pemantauan suhu tubuh. Saya rekomendasikan konsultasi cepat dengan dokter umum untuk memastikan tindak lanjut yang sesuai.';
-  }
-
-  if (/(anak|batuk|pilek|flu)/.test(input)) {
-    return 'Untuk batuk atau pilek pada anak, pastikan anak cukup minum, istirahat, dan hindari paparan dingin berlebih. Supaya lebih aman, saya siapkan dokter yang cocok untuk konsultasi lanjutan.';
-  }
-
-  if (/(pusing|sakit kepala)/.test(input)) {
-    return 'Sakit kepala bisa dipicu kurang tidur, dehidrasi, atau kelelahan. Jika berulang atau memburuk, sebaiknya konsultasi dengan dokter umum agar penyebabnya dievaluasi lebih lanjut.';
-  }
-
-  if (/(kulit|jerawat|ruam|gatal)/.test(input)) {
-    return 'Keluhan kulit seperti ruam, gatal, atau jerawat lebih tepat ditangani dokter spesialis kulit. Saya pilihkan dokter yang relevan untuk Anda.';
-  }
-
-  return 'Saya bisa bantu memberikan arahan awal terkait gejala dan mencarikan dokter yang sesuai. Berikut beberapa dokter yang bisa Anda hubungi sekarang.';
+type Disease = {
+  id: string;
+  name: string;
+  symptoms: string[];
+  triage_category: TriageCategory;
+  advice: string;
+  recommendation_link: '/shop' | '/doctors';
 };
 
-export default function NihaoAIWidget({ isOpen, onClose, onSelectDoctor }: NihaoAIWidgetProps) {
+type TriageStep = 'awaitingSymptom' | 'awaitingArea' | 'completed';
+
+const diseases = diseasesData as Disease[];
+
+const normalizeArea = (input: string): TriageCategory | null => {
+  const text = input.toLowerCase();
+  if (/(head|kepala|pusing|migrain)/.test(text)) {
+    return 'Head';
+  }
+
+  if (/(stomach|lambung|perut|mual|diare)/.test(text)) {
+    return 'Stomach';
+  }
+
+  if (/(others|lain|selain|tenggorokan|kulit|otot|batuk|flu)/.test(text)) {
+    return 'Others';
+  }
+
+  return null;
+};
+
+const scoreDiseaseMatch = (disease: Disease, symptomInput: string) => {
+  const normalizedInput = symptomInput.toLowerCase();
+  const terms = normalizedInput.split(/\s+/).filter((term) => term.length > 2);
+
+  return terms.reduce((score, term) => {
+    const symptomScore = disease.symptoms.some((symptom) => symptom.toLowerCase().includes(term)) ? 2 : 0;
+    const nameScore = disease.name.toLowerCase().includes(term) ? 1 : 0;
+    return score + symptomScore + nameScore;
+  }, 0);
+};
+
+export default function NihaoAIWidget({ isOpen, onClose }: NihaoAIWidgetProps) {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<AiMessage[]>([]);
+  const [triageStep, setTriageStep] = useState<TriageStep>('awaitingSymptom');
+  const [pendingSymptom, setPendingSymptom] = useState('');
   const messageEndRef = useRef<HTMLDivElement | null>(null);
   const replyTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isOpen) {
+      setTriageStep('awaitingSymptom');
+      setPendingSymptom('');
       setMessages([
         {
           id: 1,
           sender: 'ai',
-          text: 'Halo, saya Nihao AI. Ceritakan gejala Anda seperti "meriang", "anak batuk", atau "kulit gatal", nanti saya bantu beri arahan awal dan rekomendasi dokter.',
+          text: 'Halo, saya Nihao AI 2.0. Ceritakan gejala yang Anda rasakan dulu ya, nanti saya bantu triase langkah demi langkah.',
         },
       ]);
     }
@@ -88,16 +114,69 @@ export default function NihaoAIWidget({ isOpen, onClose, onSelectDoctor }: Nihao
     }
 
     replyTimeoutRef.current = window.setTimeout(() => {
+      if (triageStep === 'awaitingSymptom' || triageStep === 'completed') {
+        // Always ask follow-up first instead of diagnosing immediately.
+        setPendingSymptom(trimmedInput);
+        setTriageStep('awaitingArea');
+        setMessages((current) => [
+          ...current,
+          {
+            id: Date.now() + 1,
+            sender: 'ai',
+            text: 'Terima kasih. Supaya lebih akurat, area keluhannya ada di Head, Stomach, atau Others?',
+          },
+        ]);
+        return;
+      }
+
+      const area = normalizeArea(trimmedInput);
+
+      if (!area) {
+        setMessages((current) => [
+          ...current,
+          {
+            id: Date.now() + 1,
+            sender: 'ai',
+            text: 'Saya belum bisa mengenali areanya. Balas dengan salah satu: Head, Stomach, atau Others.',
+          },
+        ]);
+        return;
+      }
+
+      const rankedMatches = diseases
+        .filter((disease) => disease.triage_category === area)
+        .map((disease) => ({ disease, score: scoreDiseaseMatch(disease, pendingSymptom) }))
+        .sort((a, b) => b.score - a.score);
+
+      const bestMatches = rankedMatches.slice(0, 3).map((item) => item.disease);
+      const primaryMatch = bestMatches[0];
+
+      if (!primaryMatch) {
+        setMessages((current) => [
+          ...current,
+          {
+            id: Date.now() + 1,
+            sender: 'ai',
+            text: 'Saya belum menemukan saran yang tepat dari area tersebut. Anda bisa coba jelaskan gejala dengan detail lain.',
+            ctaLink: '/doctors',
+          },
+        ]);
+        setTriageStep('completed');
+        return;
+      }
+
       setMessages((current) => [
         ...current,
         {
           id: Date.now() + 1,
           sender: 'ai',
-          text: getAiResponse(trimmedInput),
-          recommendations: getAiRecommendations(trimmedInput).slice(0, 2),
+          text: `Berdasarkan triase ${area}, keluhan Anda paling mendekati ${primaryMatch.name}. Saran awal: ${primaryMatch.advice}`,
+          matches: bestMatches,
+          ctaLink: primaryMatch.recommendation_link,
         },
       ]);
-    }, 900);
+      setTriageStep('completed');
+    }, 800);
   };
 
   if (!isOpen) {
@@ -138,27 +217,27 @@ export default function NihaoAIWidget({ isOpen, onClose, onSelectDoctor }: Nihao
               }`}
             >
               <p>{message.text}</p>
-              {message.recommendations && (
+              {message.matches && (
                 <div className="mt-3 space-y-2">
-                  {message.recommendations.map((doctor) => (
-                    <div key={doctor.id} className="rounded-2xl border border-gray-100 bg-[#F9FBFB] p-3">
-                      <div className="flex items-center gap-3">
-                        <img src={doctor.img} alt={doctor.name} className="h-10 w-10 rounded-full object-cover" />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-gray-900">{doctor.name}</p>
-                          <p className="text-xs text-gray-500">{doctor.spec}</p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => onSelectDoctor(doctor)}
-                          className="rounded-full bg-[#268489] px-3 py-1.5 text-xs font-medium text-white transition hover:bg-[#1f6f73]"
-                        >
-                          Chat
-                        </button>
+                  {message.matches.map((disease) => (
+                    <div key={disease.id} className="rounded-2xl border border-gray-100 bg-[#F9FBFB] p-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-semibold text-gray-900">{disease.name}</p>
+                        <p className="mt-1 text-xs text-gray-500">
+                          Gejala terkait: {disease.symptoms.slice(0, 2).join(', ')}
+                        </p>
                       </div>
                     </div>
                   ))}
                 </div>
+              )}
+              {message.ctaLink && (
+                <Link
+                  to={message.ctaLink}
+                  className="mt-3 inline-flex rounded-full bg-[#268489] px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-[#1f6f73]"
+                >
+                  {message.ctaLink === '/shop' ? 'Lihat Produk Rekomendasi' : 'Konsultasi Dokter Sekarang'}
+                </Link>
               )}
             </div>
           </div>
@@ -172,7 +251,11 @@ export default function NihaoAIWidget({ isOpen, onClose, onSelectDoctor }: Nihao
             type="text"
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="Tulis gejala atau pertanyaan..."
+            placeholder={
+              triageStep === 'awaitingArea'
+                ? 'Balas: Head / Stomach / Others'
+                : 'Tulis gejala atau pertanyaan...'
+            }
             className="h-11 flex-1 rounded-full border border-gray-200 bg-gray-50 px-4 text-sm text-gray-700 outline-none transition focus:border-[#268489] focus:bg-white focus:ring-4 focus:ring-teal-100"
           />
           <button

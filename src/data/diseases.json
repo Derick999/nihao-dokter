@@ -1,0 +1,162 @@
+[
+  {
+    "id": "d001",
+    "name": "Migraine",
+    "symptoms": ["sakit kepala berdenyut", "mual", "sensitif cahaya", "nyeri kepala satu sisi"],
+    "triage_category": "Head",
+    "advice": "Istirahat di ruangan gelap, cukup hidrasi, dan hindari pemicu seperti kurang tidur. Jika nyeri sangat berat atau berulang sering, konsultasikan ke dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d002",
+    "name": "Tension Headache",
+    "symptoms": ["kepala terasa tertekan", "tegang leher", "sakit kepala ringan", "stres"],
+    "triage_category": "Head",
+    "advice": "Lakukan relaksasi, peregangan leher, dan istirahat cukup. Bila keluhan menetap lebih dari beberapa hari, periksa ke dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d003",
+    "name": "Sinusitis",
+    "symptoms": ["nyeri wajah", "hidung tersumbat", "sakit kepala", "ingus kental"],
+    "triage_category": "Head",
+    "advice": "Gunakan uap hangat dan jaga hidrasi. Jika gejala disertai demam tinggi atau berlangsung lama, konsultasi dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d004",
+    "name": "Vertigo",
+    "symptoms": ["pusing berputar", "mual", "kehilangan keseimbangan", "kepala ringan"],
+    "triage_category": "Head",
+    "advice": "Hindari gerakan mendadak dan duduk saat gejala muncul. Jika berulang atau mengganggu aktivitas, temui dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d005",
+    "name": "Conjunctivitis",
+    "symptoms": ["mata merah", "mata berair", "gatal mata", "kelopak lengket"],
+    "triage_category": "Head",
+    "advice": "Jaga kebersihan tangan dan hindari mengucek mata. Bila nyeri berat atau penglihatan menurun, segera periksa dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d006",
+    "name": "Gastritis",
+    "symptoms": ["nyeri ulu hati", "mual", "perut perih", "kembung"],
+    "triage_category": "Stomach",
+    "advice": "Makan porsi kecil tetapi sering dan hindari makanan pedas atau asam. Jika nyeri tidak membaik, konsultasi dokter.",
+    "recommendation_link": "/shop"
+  },
+  {
+    "id": "d007",
+    "name": "GERD",
+    "symptoms": ["asam lambung naik", "heartburn", "rasa terbakar dada", "mulut pahit"],
+    "triage_category": "Stomach",
+    "advice": "Hindari makan larut malam, kurangi kopi, dan tidur dengan kepala lebih tinggi. Bila sering kambuh, evaluasi ke dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d008",
+    "name": "Food Poisoning",
+    "symptoms": ["muntah", "diare", "nyeri perut", "mual setelah makan"],
+    "triage_category": "Stomach",
+    "advice": "Fokus pada cairan dan oralit untuk mencegah dehidrasi. Jika terdapat darah pada tinja atau lemas berat, segera ke dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d009",
+    "name": "Irritable Bowel Syndrome",
+    "symptoms": ["perut kembung", "nyeri perut hilang timbul", "konstipasi", "diare"],
+    "triage_category": "Stomach",
+    "advice": "Catat makanan pemicu, tingkatkan serat secara bertahap, dan kelola stres. Konsultasi dokter jika gejala mengganggu aktivitas harian.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d010",
+    "name": "Constipation",
+    "symptoms": ["sulit BAB", "perut penuh", "BAB keras", "tidak nyaman perut"],
+    "triage_category": "Stomach",
+    "advice": "Perbanyak minum air, serat, dan aktivitas fisik ringan. Jika tidak membaik dalam beberapa hari, pertimbangkan konsultasi dokter.",
+    "recommendation_link": "/shop"
+  },
+  {
+    "id": "d011",
+    "name": "Common Cold",
+    "symptoms": ["pilek", "hidung tersumbat", "batuk ringan", "nyeri tenggorokan"],
+    "triage_category": "Others",
+    "advice": "Istirahat, minum cukup air, dan konsumsi makanan bergizi. Jika demam tinggi atau sesak napas, hubungi dokter.",
+    "recommendation_link": "/shop"
+  },
+  {
+    "id": "d012",
+    "name": "Influenza",
+    "symptoms": ["demam", "batuk", "nyeri otot", "lemas"],
+    "triage_category": "Others",
+    "advice": "Istirahat total dan banyak minum. Jika gejala berat atau berlangsung lama, konsultasi dokter untuk evaluasi lanjutan.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d013",
+    "name": "Acute Bronchitis",
+    "symptoms": ["batuk berdahak", "napas berat", "dada tidak nyaman", "demam ringan"],
+    "triage_category": "Others",
+    "advice": "Istirahat, gunakan udara lembap, dan pantau napas. Jika sesak atau batuk memburuk, segera periksa ke dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d014",
+    "name": "Allergic Rhinitis",
+    "symptoms": ["bersin berulang", "hidung gatal", "mata berair", "hidung meler"],
+    "triage_category": "Others",
+    "advice": "Hindari pemicu alergi dan jaga kebersihan lingkungan. Konsultasi jika gejala sering kambuh dan mengganggu tidur.",
+    "recommendation_link": "/shop"
+  },
+  {
+    "id": "d015",
+    "name": "Eczema",
+    "symptoms": ["kulit kering", "gatal", "ruam", "kulit pecah-pecah"],
+    "triage_category": "Others",
+    "advice": "Gunakan pelembap rutin dan hindari sabun keras. Bila ruam meluas atau terinfeksi, periksakan ke dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d016",
+    "name": "Urticaria",
+    "symptoms": ["biduran", "gatal hebat", "bentol merah", "ruam tiba-tiba"],
+    "triage_category": "Others",
+    "advice": "Hindari pemicu yang dicurigai dan kompres dingin area gatal. Jika sesak napas muncul, segera cari pertolongan medis.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d017",
+    "name": "Urinary Tract Infection",
+    "symptoms": ["nyeri saat BAK", "sering BAK", "urin keruh", "nyeri perut bawah"],
+    "triage_category": "Others",
+    "advice": "Perbanyak minum air dan jangan menahan BAK. Jika disertai demam atau nyeri pinggang, segera konsultasi dokter.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d018",
+    "name": "Muscle Strain",
+    "symptoms": ["nyeri otot", "kaku", "bengkak ringan", "nyeri saat bergerak"],
+    "triage_category": "Others",
+    "advice": "Istirahatkan area yang nyeri dan lakukan kompres dingin awal. Jika nyeri berat atau tidak membaik, evaluasi medis diperlukan.",
+    "recommendation_link": "/shop"
+  },
+  {
+    "id": "d019",
+    "name": "Dengue Warning Symptoms",
+    "symptoms": ["demam tinggi", "nyeri sendi", "ruam", "mual"],
+    "triage_category": "Others",
+    "advice": "Pantau suhu dan cairan dengan ketat, hindari obat tertentu tanpa anjuran dokter. Jika muncul perdarahan atau lemas berat, segera ke fasilitas kesehatan.",
+    "recommendation_link": "/doctors"
+  },
+  {
+    "id": "d020",
+    "name": "Mild Dehydration",
+    "symptoms": ["haus", "mulut kering", "pusing", "urin pekat"],
+    "triage_category": "Others",
+    "advice": "Tingkatkan asupan cairan dan elektrolit secara bertahap. Jika tidak membaik atau disertai muntah terus-menerus, konsultasi dokter.",
+    "recommendation_link": "/shop"
+  }
+]
