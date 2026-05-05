@@ -78,7 +78,7 @@ export default function Home({ onOpenChat }: HomeProps) {
               <div className="absolute left-10 top-8 h-72 w-72 rounded-full bg-[#D32F2F]/10 blur-3xl" />
               <div className="absolute bottom-12 right-0 h-72 w-72 rounded-full bg-[#268489]/15 blur-3xl" />
               <img 
-                src="/doktervivi.png" 
+                src="/dokternanan.png" 
                 alt="fotodokter" 
                 className="relative z-10 ml-auto mr-0 w-full max-w-lg object-contain drop-shadow-[0_30px_60px_rgba(15,23,42,0.18)]"
                 referrerPolicy="no-referrer"

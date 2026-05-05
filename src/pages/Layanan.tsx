@@ -60,7 +60,7 @@ export default function Layanan({ onOpenChat }: LayananProps) {
   return (
     <main className="flex-grow bg-white">
       {/* Header */}
-      <section className="bg-green-50 py-16">
+     <section className="bg-green-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl mb-4">
             Layanan <span className="text-[#268489]">Kesehatan</span>
