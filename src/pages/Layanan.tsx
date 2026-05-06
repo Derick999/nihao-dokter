@@ -158,7 +158,7 @@ export default function Layanan({ onOpenChat }: LayananProps) {
 
   const calorieAdvice = useMemo(() => {
     if (tdeeResult === null) {
-      return 'Isi data dan hitung dulu untuk mendapatkan rekomendasi kebutuhan kalori harian.';
+      return 'Data perlu diisi dan dihitung terlebih dahulu untuk mendapatkan rekomendasi kebutuhan kalori harian.';
     }
     if (tdeeResult < 1800) {
       return 'Kebutuhan kalori harianmu cenderung rendah. Fokus pada kualitas nutrisi dan asupan protein cukup.';
