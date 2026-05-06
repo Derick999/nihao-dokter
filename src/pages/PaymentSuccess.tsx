@@ -67,7 +67,7 @@ export default function PaymentSuccess() {
             {summary ? (
               <div className="mt-4 space-y-3 text-sm text-gray-600">
                 <p><span className="font-semibold text-gray-800">Order ID:</span> {summary.orderId}</p>
-                <p><span className="font-semibold text-gray-800">Waktu Pembayaran:</span> {new Date(summary.paidAt).toLocaleString('id-ID')}</p>
+                <p><span className="font-semibold text-gray-800">Waktu Pembayaran: </span> {new Date(summary.paidAt).toLocaleString('id-ID')}</p>
                 <p><span className="font-semibold text-gray-800">Total Item:</span> {summary.totalItems}</p>
                 <p className="text-base font-bold text-[#0D503C]">Total Bayar: {formatRupiah(summary.totalPrice)}</p>
                 <div className="pt-2">
