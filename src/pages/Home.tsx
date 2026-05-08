@@ -1,4 +1,4 @@
-import { Thermometer, Brain, Wind, ActivitySquare, Stethoscope, Activity, CalendarDays, ShoppingBag, TestTube, MessageCircle } from 'lucide-react';
+import { Thermometer, Brain, Wind, ActivitySquare, Stethoscope, Activity, ShoppingBag, MessageCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { doctors } from '../data/doctors';
 
@@ -10,9 +10,7 @@ export default function Home({ onOpenChat }: HomeProps) {
   const navigate = useNavigate();
   const heroFeatures = [
     { name: 'Chat Dokter', icon: <Stethoscope className="h-6 w-6" />, to: '/layanan' },
-    { name: 'Buat Janji Medis', icon: <CalendarDays className="h-6 w-6" />, to: '/layanan' },
     { name: 'Nihao Shop', icon: <ShoppingBag className="h-6 w-6" />, to: '/shop' },
-    { name: 'Layanan Lab', icon: <TestTube className="h-6 w-6" />, to: '/layanan' },
   ];
 
   const handleProtectedFeatureClick = (target: string) => {
