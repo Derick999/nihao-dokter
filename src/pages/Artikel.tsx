@@ -1,53 +1,20 @@
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import articlesData from '../data/articles.json';
+
+type Article = {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  readTime: string;
+  excerpt: string;
+  fullContent: string;
+  imageUrl: string;
+};
 
 export default function Artikel() {
-  const articles = [
-    {
-      id: 1,
-      title: '5 Cara Ampuh Meredakan Sakit Kepala Tanpa Obat',
-      excerpt: 'Sakit kepala bisa sangat mengganggu aktivitas. Ketahui cara alami meredakannya dengan cepat dan efektif.',
-      date: '12 Mar 2026',
-      readTime: '4 min read',
-      category: 'Kesehatan Umum',
-      img: 'https://picsum.photos/seed/article1/600/400'
-    },
-    {
-      id: 2,
-      title: 'Pentingnya Menjaga Kesehatan Mental di Era Digital',
-      excerpt: 'Stres akibat media sosial semakin meningkat. Pelajari tips menjaga keseimbangan mental Anda.',
-      date: '10 Mar 2026',
-      readTime: '6 min read',
-      category: 'Psikologi',
-      img: 'https://picsum.photos/seed/article2/600/400'
-    },
-    {
-      id: 3,
-      title: 'Mitos dan Fakta Seputar Diet Keto',
-      excerpt: 'Apakah diet keto benar-benar aman untuk semua orang? Mari kita kupas tuntas mitos dan faktanya.',
-      date: '08 Mar 2026',
-      readTime: '5 min read',
-      category: 'Nutrisi',
-      img: 'https://picsum.photos/seed/article3/600/400'
-    },
-    {
-      id: 4,
-      title: 'Olahraga Ringan untuk Mengatasi Nyeri Punggung',
-      excerpt: 'Duduk terlalu lama bisa menyebabkan nyeri punggung. Lakukan gerakan sederhana ini setiap hari.',
-      date: '05 Mar 2026',
-      readTime: '3 min read',
-      category: 'Kebugaran',
-      img: 'https://picsum.photos/seed/article4/600/400'
-    },
-    {
-      id: 5,
-      title: 'Tanda-tanda Tubuh Kekurangan Vitamin D',
-      excerpt: 'Kelelahan kronis bisa jadi tanda Anda kekurangan vitamin D. Kenali gejala lainnya di sini.',
-      date: '01 Mar 2026',
-      readTime: '4 min read',
-      category: 'Kesehatan Umum',
-      img: 'https://picsum.photos/seed/article5/600/400'
-    }
-  ];
+  const articles = articlesData as Article[];
 
   return (
     <main className="flex-grow bg-white py-12">
@@ -66,7 +33,7 @@ export default function Artikel() {
             <article key={article.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
               <div className="relative h-48">
                 <img 
-                  src={article.img} 
+                  src={article.imageUrl}
                   alt={article.title} 
                   className="w-full h-full object-cover"
                   referrerPolicy="no-referrer"
@@ -86,19 +53,21 @@ export default function Artikel() {
                   </span>
                 </div>
                 
-                <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 hover:text-[#D32F2F] transition-colors cursor-pointer">
-                  {article.title}
-                </h2>
+                <Link to={`/artikel/${article.id}`} className="block">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 hover:text-[#D32F2F] transition-colors cursor-pointer">
+                    {article.title}
+                  </h2>
+                </Link>
                 
                 <p className="text-gray-600 text-sm mb-6 flex-grow line-clamp-3">
                   {article.excerpt}
                 </p>
                 
                 <div className="mt-auto">
-                  <a href="#" className="inline-flex items-center text-[#D32F2F] font-semibold hover:text-red-800 transition-colors">
+                  <Link to={`/artikel/${article.id}`} className="inline-flex items-center text-[#D32F2F] font-semibold hover:text-red-800 transition-colors">
                     Baca Selengkapnya
                     <ArrowRight className="w-4 h-4 ml-1" />
-                  </a>
+                  </Link>
                 </div>
               </div>
             </article>

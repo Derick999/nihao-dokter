@@ -86,9 +86,9 @@ export default function Footer({ onOpenChat }: FooterProps) {
             </h3>
             <ul className="space-y-4">
               <li>
-                <a href="#" className="text-base text-gray-500 hover:text-[#2E7D32]">
+                <Link to="/tentang-kami" className="text-base text-gray-500 hover:text-[#2E7D32]">
                   Tentang Kami
-                </a>
+                </Link>
               </li>
               <li>
                 <a href="#" className="text-base text-gray-500 hover:text-[#2E7D32]">

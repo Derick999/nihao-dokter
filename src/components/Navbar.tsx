@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, House, BookOpen, HeartPulse, LogOut, User } from 'lucide-react';
+import { ShoppingBag, Menu, X, House, BookOpen, Stethoscope, LogOut, User, Info } from 'lucide-react';
 import { useState } from 'react';
 import { StoredUser } from '../utils/auth';
 import SearchBar from './SearchBar';
@@ -14,9 +14,10 @@ export default function Navbar({ currentUser, onLogout }: NavbarProps) {
   const location = useLocation();
   const navLinks = [
     { name: 'Beranda', path: '/', icon: <House className="h-4 w-4" /> },
-    { name: 'Health Tracker', path: '/layanan', icon: <HeartPulse className="h-4 w-4" /> },
+    { name: 'Riwayat', path: '/riwayat', icon: <Stethoscope className="h-4 w-4" /> },
     { name: 'Nihao Shop', path: '/shop', icon: <ShoppingBag className="h-4 w-4" /> },
     { name: 'Artikel', path: '/artikel', icon: <BookOpen className="h-4 w-4" /> },
+    { name: 'Tentang', path: '/tentang-kami', icon: <Info className="h-4 w-4" /> },
   ];
 
   return (

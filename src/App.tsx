@@ -8,7 +8,12 @@ import NihaoAIWidget from './components/NihaoAIWidget';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import Artikel from './pages/Artikel';
+import ArticleDetail from './pages/ArticleDetail';
 import Layanan from './pages/Layanan';
+import Riwayat from './pages/Riwayat';
+import PilihPasien from './pages/PilihPasien';
+import ChatRoom from './pages/ChatRoom';
+import About from './pages/About';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import PaymentSuccess from './pages/PaymentSuccess';
@@ -88,9 +93,15 @@ function AppShell() {
       <Routes>
         <Route path="/" element={<Home onOpenChat={handleOpenChat} />} />
         <Route path="/layanan" element={<Layanan onOpenChat={handleOpenChat} />} />
+        <Route path="/riwayat" element={<Riwayat />} />
+        <Route path="/chat-dokter" element={<Riwayat />} />
+        <Route path="/pilih-pasien" element={<PilihPasien />} />
+        <Route path="/chat-room" element={<ChatRoom />} />
+        <Route path="/tentang-kami" element={<About />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
         <Route path="/artikel" element={<Artikel />} />
+        <Route path="/artikel/:slug" element={<ArticleDetail />} />
         <Route path="/login" element={<Login onAuthSuccess={handleAuthSuccess} />} />
         <Route path="/register" element={<Register onAuthSuccess={handleAuthSuccess} />} />
       </Routes>
