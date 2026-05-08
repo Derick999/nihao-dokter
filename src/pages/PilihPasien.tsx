@@ -2,6 +2,7 @@ import { FormEvent, useMemo, useState } from 'react';
 import { Copy, QrCode } from 'lucide-react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { getStoredUser } from '../utils/auth';
+import BackButton from '../components/BackButton';
 import {
   clearPendingDoctor,
   getFamilyProfiles,
@@ -101,6 +102,9 @@ export default function PilihPasien() {
   return (
     <main className="flex-grow bg-[#F7FBFC] py-8 sm:py-10">
       <section className="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div className="pt-1">
+          <BackButton />
+        </div>
         <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
           <h1 className="text-2xl font-bold text-gray-900">Pilih Pasien</h1>
           <p className="mt-2 text-sm text-gray-600">

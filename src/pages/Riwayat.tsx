@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Package, Stethoscope } from 'lucide-react';
 import { getActiveSession, isSessionStillActive } from '../utils/chatFlow';
+import BackButton from '../components/BackButton';
 
 type FilterType = 'Semua' | 'Konsultasi Dokter' | 'Pesanan Shop';
 
@@ -98,6 +99,9 @@ export default function Riwayat() {
   return (
     <main className="min-h-[calc(100vh-9rem)] flex-grow bg-[#F7FBFC] py-8 sm:py-10">
       <section className="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div className="pt-1">
+          <BackButton />
+        </div>
         <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
           <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Riwayat</h1>
           <p className="mt-2 text-sm text-gray-600 sm:text-base">

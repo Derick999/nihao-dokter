@@ -1,6 +1,7 @@
 import { Calendar, Clock, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import articlesData from '../data/articles.json';
+import BackButton from '../components/BackButton';
 
 type Article = {
   id: string;
@@ -19,6 +20,9 @@ export default function Artikel() {
   return (
     <main className="flex-grow bg-white py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 pt-1">
+          <BackButton />
+        </div>
         <div className="text-center mb-12">
           <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl mb-4">
             Edukasi <span className="text-[#D32F2F]">Kesehatan</span>

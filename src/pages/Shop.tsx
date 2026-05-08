@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Minus, Plus, ShoppingCart, Star, Trash2, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
+import BackButton from '../components/BackButton';
 
 type Product = {
   id: number;
@@ -169,6 +170,9 @@ export default function Shop() {
   return (
     <main className="flex-grow bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 pt-1">
+          <BackButton />
+        </div>
         <div className="mb-12 flex flex-col gap-5 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <div>
             <h1 className="mb-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">

@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Calendar, Clock, ChevronRight, ArrowLeft } from 'lucide-react';
 import articlesData from '../data/articles.json';
+import BackButton from '../components/BackButton';
 
 type Article = {
   id: string;
@@ -42,6 +43,9 @@ export default function ArticleDetail() {
   return (
     <main className="flex-grow bg-white py-8 sm:py-10">
       <article className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 pt-1">
+          <BackButton />
+        </div>
         <nav className="mb-5 flex flex-wrap items-center gap-1 text-xs text-gray-500 sm:text-sm">
           <Link to="/" className="hover:text-[#268489]">Home</Link>
           <ChevronRight className="h-4 w-4" />

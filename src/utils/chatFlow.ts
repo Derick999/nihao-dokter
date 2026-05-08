@@ -26,7 +26,8 @@ export type ActiveChatSession = {
 
 const BOOKING_DOCTOR_KEY = 'nihaoBookingDoctor';
 const FAMILY_PROFILES_KEY = 'nihaoFamilyProfiles';
-const ACTIVE_CHAT_SESSION_KEY = 'nihaoActiveChatSession';
+const ACTIVE_CHAT_SESSION_KEY = 'active_session';
+const LEGACY_ACTIVE_CHAT_SESSION_KEY = 'nihaoActiveChatSession';
 const CHAT_DURATION_MS = 3 * 60 * 60 * 1000;
 
 export const getChatDurationMs = () => CHAT_DURATION_MS;
@@ -87,17 +88,32 @@ export const saveFamilyProfiles = (profiles: FamilyProfile[]) => {
 };
 
 export const saveActiveSession = (session: ActiveChatSession) => {
+  localStorage.removeItem(LEGACY_ACTIVE_CHAT_SESSION_KEY);
   localStorage.setItem(ACTIVE_CHAT_SESSION_KEY, JSON.stringify(session));
 };
 
 export const getActiveSession = (): ActiveChatSession | null => {
-  const raw = localStorage.getItem(ACTIVE_CHAT_SESSION_KEY);
+  const raw =
+    localStorage.getItem(ACTIVE_CHAT_SESSION_KEY) ||
+    localStorage.getItem(LEGACY_ACTIVE_CHAT_SESSION_KEY);
   if (!raw) {
     return null;
   }
 
   try {
-    return JSON.parse(raw) as ActiveChatSession;
+    const parsed = JSON.parse(raw) as ActiveChatSession;
+
+    if (!isSessionStillActive(parsed.startedAt)) {
+      clearActiveSession();
+      return null;
+    }
+
+    if (!localStorage.getItem(ACTIVE_CHAT_SESSION_KEY)) {
+      localStorage.setItem(ACTIVE_CHAT_SESSION_KEY, raw);
+      localStorage.removeItem(LEGACY_ACTIVE_CHAT_SESSION_KEY);
+    }
+
+    return parsed;
   } catch {
     return null;
   }
@@ -105,6 +121,7 @@ export const getActiveSession = (): ActiveChatSession | null => {
 
 export const clearActiveSession = () => {
   localStorage.removeItem(ACTIVE_CHAT_SESSION_KEY);
+  localStorage.removeItem(LEGACY_ACTIVE_CHAT_SESSION_KEY);
 };
 
 export const isSessionStillActive = (startedAt: number) => {

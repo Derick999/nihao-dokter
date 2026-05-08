@@ -1,4 +1,4 @@
-import { Thermometer, Brain, Wind, ActivitySquare, Stethoscope, Activity, ShoppingBag, X, Star, ShieldCheck, Users } from 'lucide-react';
+import { Thermometer, Brain, Wind, ActivitySquare, Stethoscope, Activity, ShoppingBag, X, Star, ShieldCheck, Users, ArrowRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { doctors } from '../data/doctors';
@@ -296,16 +296,15 @@ export default function Home({ onOpenChat }: HomeProps) {
 
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-10">
+          <div className="mb-10">
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2">Rekomendasi Dokter</h2>
               <p className="text-gray-500">Konsultasi langsung dengan dokter spesialis kami.</p>
             </div>
-            <Link to="/layanan" className="text-[#2E7D32] font-semibold hover:underline hidden sm:block">Lihat Semua</Link>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
-            {doctors.map((doc) => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {doctors.slice(0, 3).map((doc) => (
               <div key={doc.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col">
                 <div className="relative">
                   <img 
@@ -344,9 +343,30 @@ export default function Home({ onOpenChat }: HomeProps) {
                 </div>
               </div>
             ))}
+
+            <button
+              type="button"
+              onClick={() => navigate('/chat-dokter')}
+              className="hidden lg:flex h-full min-h-[360px] items-center justify-center rounded-2xl border border-[#D7ECEC] bg-[#F3FAFA] text-[#268489] transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:shadow-md"
+            >
+              <span className="inline-flex flex-col items-center gap-2 rounded-2xl bg-white px-6 py-5 shadow-sm">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-[#268489] text-white">
+                  <ArrowRight className="h-5 w-5" />
+                </span>
+                <span className="text-sm font-semibold">Lihat Semua</span>
+              </span>
+            </button>
           </div>
-          <div className="mt-8 text-center sm:hidden">
-            <Link to="/layanan" className="text-[#2E7D32] font-semibold hover:underline">Lihat Semua Dokter</Link>
+
+          <div className="mt-6 flex justify-center lg:hidden">
+            <button
+              type="button"
+              onClick={() => navigate('/chat-dokter')}
+              className="inline-flex items-center gap-2 rounded-full bg-[#268489] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-300 hover:bg-[#1f6f73] hover:shadow-md active:scale-[0.98]"
+            >
+              Lihat Semua
+              <ArrowRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </section>

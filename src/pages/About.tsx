@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrainCircuit, Stethoscope, Target } from 'lucide-react';
+import BackButton from '../components/BackButton';
 
 const teamMembers = [
   'Bayanaka Indrayana Sukanda',
@@ -51,6 +52,9 @@ export default function About() {
   return (
     <main className="flex-grow bg-[#F7FBFC] py-10 sm:py-12">
       <section className="mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8">
+        <div className="pt-1">
+          <BackButton />
+        </div>
         <header className="rounded-3xl border border-[#D9EEEF] bg-white p-6 shadow-sm sm:p-10">
           <p className="inline-flex rounded-full border border-[#268489]/20 bg-[#EAF7F4] px-4 py-1.5 text-xs font-semibold uppercase tracking-wide text-[#268489]">
             Tentang NihaoDokter
