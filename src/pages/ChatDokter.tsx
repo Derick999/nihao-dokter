@@ -1,9 +1,26 @@
-import { Clock3, ShieldCheck, Star, Stethoscope, Baby, Ear, HeartPulse, Brain } from 'lucide-react';
+import {
+  Baby,
+  Brain,
+  CheckCircle2,
+  Clock3,
+  Ear,
+  HeartPulse,
+  ShieldCheck,
+  Star,
+  Stethoscope,
+  WalletCards,
+  X,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getStoredUser } from '../utils/auth';
-import { getActiveSession, isSessionStillActive, savePendingDoctor, type BookingDoctor } from '../utils/chatFlow';
+import {
+  getActiveSession,
+  getFamilyProfiles,
+  isSessionStillActive,
+  saveActiveSession,
+} from '../utils/chatFlow';
 import BackButton from '../components/BackButton';
 
 type SpecialtyFilter = 'Semua' | 'Umum' | 'Anak' | 'THT' | 'Jantung' | 'Psikologi';
@@ -20,6 +37,9 @@ type DoctorRecommendation = {
   bio: string;
   reviews: Array<{ id: number; text: string; author: string }>;
 };
+
+type BookingStep = 'profile' | 'patient' | 'payment' | 'success';
+type PaymentMethod = 'QRIS' | 'VA';
 
 const specialtyFilters: Array<{ id: SpecialtyFilter; label: string; icon: ReactNode }> = [
   { id: 'Semua', label: 'Semua', icon: <Stethoscope className="h-5 w-5" /> },
@@ -87,7 +107,12 @@ export default function ChatDokter() {
   const [activeSessionSnapshot, setActiveSessionSnapshot] = useState(getActiveSession());
   const [selectedSpecialty, setSelectedSpecialty] = useState<SpecialtyFilter>('Semua');
   const [selectedDoctorId, setSelectedDoctorId] = useState<number | null>(null);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>('');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [bookingStep, setBookingStep] = useState<BookingStep>('profile');
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+  const familyProfiles = useMemo(() => getFamilyProfiles(), []);
 
   useEffect(() => {
     setIsLoggedIn(Boolean(getStoredUser()));
@@ -95,10 +120,17 @@ export default function ChatDokter() {
   }, []);
 
   useEffect(() => {
-    const interval = window.setInterval(() => {
+    const syncSession = () => {
       setActiveSessionSnapshot(getActiveSession());
-    }, 1000);
-    return () => window.clearInterval(interval);
+    };
+
+    const interval = window.setInterval(syncSession, 1000);
+    window.addEventListener('storage', syncSession);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener('storage', syncSession);
+    };
   }, []);
 
   const selectedDoctor = useMemo(
@@ -125,34 +157,69 @@ export default function ChatDokter() {
     return () => window.clearInterval(interval);
   }, [selectedDoctor]);
 
+  useEffect(() => {
+    if (!showSuccessNotification) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setShowSuccessNotification(false);
+    }, 2500);
+
+    return () => window.clearTimeout(timeout);
+  }, [showSuccessNotification]);
+
   const hasActiveSession = Boolean(
     activeSessionSnapshot && isSessionStillActive(activeSessionSnapshot.startedAt),
   );
 
-  const handleSelectDoctor = (doctor: DoctorRecommendation) => {
+  const handleOpenDoctorModal = (doctor: DoctorRecommendation) => {
     if (!isLoggedIn) {
       navigate('/login');
       return;
     }
+
     setSelectedDoctorId(doctor.id);
+    setBookingStep('profile');
+    setSelectedPatientId('');
+    setSelectedPaymentMethod(null);
     setActiveReviewIndex(0);
   };
 
-  const handleProceedBooking = () => {
+  const closeModal = () => {
+    setSelectedDoctorId(null);
+    setBookingStep('profile');
+    setSelectedPatientId('');
+    setSelectedPaymentMethod(null);
+    setActiveReviewIndex(0);
+  };
+
+  const handleConfirmPayment = () => {
     if (!selectedDoctor) {
       return;
     }
 
-    const pendingDoctor: BookingDoctor = {
+    const selectedPatient = familyProfiles.find((profile) => profile.id === selectedPatientId);
+    if (!selectedPatient || !selectedPaymentMethod) {
+      return;
+    }
+
+    saveActiveSession({
       doctorName: selectedDoctor.name,
       doctorTitle: selectedDoctor.title,
       specialization: `Spesialis ${selectedDoctor.specialization}`,
       avatarSeed: selectedDoctor.avatarSeed,
-      price: selectedDoctor.price,
-    };
-    savePendingDoctor(pendingDoctor);
-    setSelectedDoctorId(null);
-    navigate('/pilih-pasien');
+      patientName: selectedPatient.fullName,
+      startedAt: Date.now(),
+    });
+
+    setBookingStep('success');
+    setShowSuccessNotification(true);
+
+    window.setTimeout(() => {
+      closeModal();
+      navigate('/chat-room');
+    }, 1400);
   };
 
   if (!isLoggedIn) {
@@ -235,7 +302,8 @@ export default function ChatDokter() {
             {popularDoctors.map((doctor) => (
               <article
                 key={doctor.id}
-                className="min-w-[240px] rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                onClick={() => handleOpenDoctorModal(doctor)}
+                className="min-w-[240px] cursor-pointer rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-colors hover:border-[#268489]/45"
               >
                 <div className="flex items-center gap-3">
                   <img
@@ -258,10 +326,13 @@ export default function ChatDokter() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleSelectDoctor(doctor)}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleOpenDoctorModal(doctor);
+                  }}
                   className="mt-3 w-full rounded-full bg-[#268489] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1f6f73]"
                 >
-                  Pilih
+                  Lihat Profil
                 </button>
               </article>
             ))}
@@ -299,7 +370,7 @@ export default function ChatDokter() {
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleSelectDoctor(doctor)}
+                  onClick={() => handleOpenDoctorModal(doctor)}
                   className="mt-3 w-full rounded-full border border-[#268489] px-4 py-2 text-xs font-semibold text-[#268489] hover:bg-[#EAF7F4]"
                 >
                   Lihat Profil
@@ -309,6 +380,17 @@ export default function ChatDokter() {
           </div>
         </section>
       </section>
+
+      {showSuccessNotification && (
+        <div className="fixed right-4 top-6 z-[90] max-w-xs rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-lg">
+          <div className="flex items-start gap-2">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+            <p className="text-xs font-semibold text-emerald-700">
+              Pembayaran berhasil. Sesi konsultasi aktif dan chat siap dimulai.
+            </p>
+          </div>
+        </div>
+      )}
 
       {selectedDoctor && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 px-4 py-6">
@@ -330,44 +412,169 @@ export default function ChatDokter() {
               </div>
               <button
                 type="button"
-                onClick={() => setSelectedDoctorId(null)}
+                onClick={closeModal}
                 className="rounded-full p-2 text-gray-500 transition-colors hover:bg-slate-100 hover:text-gray-700"
               >
-                x
+                <X className="h-4 w-4" />
               </button>
             </div>
 
             <div className="space-y-5 px-5 py-5 sm:px-6">
-              <div className="rounded-2xl border border-slate-200 bg-[#F8FCFC] p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Credentials</p>
-                <p className="mt-1 text-sm text-gray-700">{selectedDoctor.credentials}</p>
-                <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Bio</p>
-                <p className="mt-1 text-sm text-gray-700">{selectedDoctor.bio}</p>
+              <div className="flex items-center gap-2 text-xs font-semibold text-[#268489]">
+                <span className={bookingStep === 'profile' ? 'text-[#268489]' : 'text-slate-400'}>Profil</span>
+                <span className="text-slate-300">/</span>
+                <span className={bookingStep === 'patient' ? 'text-[#268489]' : 'text-slate-400'}>Pasien</span>
+                <span className="text-slate-300">/</span>
+                <span className={bookingStep === 'payment' ? 'text-[#268489]' : 'text-slate-400'}>Pembayaran</span>
               </div>
 
-              <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Ulasan Pasien</p>
-                <blockquote className="text-sm font-medium text-gray-700">"{selectedDoctor.reviews[activeReviewIndex].text}"</blockquote>
-                <p className="mt-2 text-xs text-gray-500">- {selectedDoctor.reviews[activeReviewIndex].author}</p>
-                <div className="mt-3 flex items-center gap-1 text-amber-500">
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <Star key={index} className="h-4 w-4 fill-current" />
-                  ))}
+              {bookingStep === 'profile' && (
+                <>
+                  <div className="rounded-2xl border border-slate-200 bg-[#F8FCFC] p-4">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Credentials</p>
+                    <p className="mt-1 text-sm text-gray-700">{selectedDoctor.credentials}</p>
+                    <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-gray-500">Bio</p>
+                    <p className="mt-1 text-sm text-gray-700">{selectedDoctor.bio}</p>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Ulasan Pasien</p>
+                    <blockquote className="text-sm font-medium text-gray-700">
+                      "{selectedDoctor.reviews[activeReviewIndex].text}"
+                    </blockquote>
+                    <p className="mt-2 text-xs text-gray-500">- {selectedDoctor.reviews[activeReviewIndex].author}</p>
+                    <div className="mt-3 flex items-center gap-1 text-amber-500">
+                      {Array.from({ length: 5 }).map((_, index) => (
+                        <Star key={index} className="h-4 w-4 fill-current" />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm text-gray-600">
+                      Biaya konsultasi:{' '}
+                      <span className="font-bold text-[#0D503C]">Rp {selectedDoctor.price.toLocaleString('id-ID')}</span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setBookingStep('patient')}
+                      className="inline-flex items-center justify-center rounded-full bg-[#268489] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1f6f73]"
+                    >
+                      Pilih
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {bookingStep === 'patient' && (
+                <>
+                  <div className="rounded-2xl border border-slate-200 bg-[#F8FCFC] p-4">
+                    <p className="text-sm font-semibold text-gray-900">Pilih Pasien</p>
+                    <p className="mt-1 text-xs text-gray-600">
+                      Tentukan profil pasien yang akan menjalani sesi konsultasi ini.
+                    </p>
+                    <div className="mt-3 space-y-2">
+                      {familyProfiles.map((profile) => (
+                        <button
+                          key={profile.id}
+                          type="button"
+                          onClick={() => setSelectedPatientId(profile.id)}
+                          className={`w-full rounded-xl border px-3 py-2 text-left transition-colors ${
+                            selectedPatientId === profile.id
+                              ? 'border-[#268489] bg-[#EAF7F4]'
+                              : 'border-slate-200 bg-white hover:border-[#268489]/40'
+                          }`}
+                        >
+                          <p className="text-sm font-semibold text-gray-900">{profile.fullName}</p>
+                          <p className="text-xs text-gray-600">
+                            {profile.relationship} {profile.dob ? `- ${profile.dob}` : ''}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setBookingStep('profile')}
+                      className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                    >
+                      Kembali
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!selectedPatientId}
+                      onClick={() => setBookingStep('payment')}
+                      className="rounded-full bg-[#268489] px-5 py-2 text-xs font-semibold text-white hover:bg-[#1f6f73] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Lanjut Pembayaran
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {bookingStep === 'payment' && (
+                <>
+                  <div className="rounded-2xl border border-slate-200 bg-[#F8FCFC] p-4">
+                    <p className="text-sm font-semibold text-gray-900">Pilih Metode Pembayaran</p>
+                    <p className="mt-1 text-xs text-gray-600">
+                      Selesaikan pembayaran untuk mengaktifkan sesi chat dokter.
+                    </p>
+                    <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {(['QRIS', 'VA'] as PaymentMethod[]).map((method) => (
+                        <button
+                          key={method}
+                          type="button"
+                          onClick={() => setSelectedPaymentMethod(method)}
+                          className={`rounded-xl border px-3 py-3 text-left transition-colors ${
+                            selectedPaymentMethod === method
+                              ? 'border-[#268489] bg-[#EAF7F4]'
+                              : 'border-slate-200 bg-white hover:border-[#268489]/40'
+                          }`}
+                        >
+                          <p className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900">
+                            <WalletCards className="h-4 w-4 text-[#268489]" />
+                            {method}
+                          </p>
+                          <p className="mt-1 text-xs text-gray-600">
+                            {method === 'QRIS'
+                              ? 'Bayar cepat dengan scan QR dari e-wallet atau mobile banking.'
+                              : 'Transfer virtual account dari bank pilihan Anda.'}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setBookingStep('patient')}
+                      className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+                    >
+                      Kembali
+                    </button>
+                    <button
+                      type="button"
+                      disabled={!selectedPaymentMethod}
+                      onClick={handleConfirmPayment}
+                      className="rounded-full bg-[#268489] px-5 py-2 text-xs font-semibold text-white hover:bg-[#1f6f73] disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      Bayar & Mulai Chat
+                    </button>
+                  </div>
+                </>
+              )}
+
+              {bookingStep === 'success' && (
+                <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-center">
+                  <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
+                  <p className="mt-2 text-sm font-semibold text-emerald-700">
+                    Pembayaran sukses! Anda akan diarahkan ke ruang chat.
+                  </p>
                 </div>
-              </div>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-gray-600">
-                  Biaya konsultasi: <span className="font-bold text-[#0D503C]">Rp {selectedDoctor.price.toLocaleString('id-ID')}</span>
-                </p>
-                <button
-                  type="button"
-                  onClick={handleProceedBooking}
-                  className="inline-flex items-center justify-center rounded-full bg-[#268489] px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#1f6f73]"
-                >
-                  Pilih
-                </button>
-              </div>
+              )}
             </div>
           </div>
         </div>
