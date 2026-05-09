@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getStoredUser } from '../utils/auth';
 import {
   getActiveSession,
@@ -103,6 +103,7 @@ const popularDoctors: DoctorRecommendation[] = [
 
 export default function ChatDokter() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeSessionSnapshot, setActiveSessionSnapshot] = useState(getActiveSession());
   const [selectedSpecialty, setSelectedSpecialty] = useState<SpecialtyFilter>('Semua');
@@ -156,6 +157,26 @@ export default function ChatDokter() {
 
     return () => window.clearInterval(interval);
   }, [selectedDoctor]);
+
+  useEffect(() => {
+    const state = location.state as { openDoctorName?: string } | null;
+    if (!state?.openDoctorName) {
+      return;
+    }
+
+    const matchedDoctor = popularDoctors.find((doctor) => doctor.name === state.openDoctorName);
+    if (!matchedDoctor) {
+      return;
+    }
+
+    setSelectedDoctorId(matchedDoctor.id);
+    setBookingStep('profile');
+    setSelectedPatientId('');
+    setSelectedPaymentMethod(null);
+    setActiveReviewIndex(0);
+
+    navigate(location.pathname, { replace: true });
+  }, [location.pathname, location.state, navigate]);
 
   useEffect(() => {
     if (!showSuccessNotification) {

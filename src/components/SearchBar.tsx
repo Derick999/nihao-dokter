@@ -7,7 +7,6 @@ type DoctorItem = {
   id: string;
   name: string;
   specialty: string;
-  link: string;
 };
 
 type MedicineItem = {
@@ -90,6 +89,16 @@ function SearchBar() {
     setQuery('');
   };
 
+  const handleSelectDoctor = (doctor: DoctorItem) => {
+    navigate('/chat-dokter', {
+      state: {
+        openDoctorName: doctor.name,
+      },
+    });
+    setIsDropdownOpen(false);
+    setQuery('');
+  };
+
   return (
     <div ref={wrapperRef} className="relative hidden max-w-xl flex-1 md:block">
       <Search className="pointer-events-none absolute left-4 top-5 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -118,7 +127,7 @@ function SearchBar() {
                     <button
                       key={item.id}
                       type="button"
-                      onClick={() => handleSelect(item.link)}
+                      onClick={() => handleSelectDoctor(item)}
                       className="flex w-full flex-col rounded-xl px-3 py-2 text-left transition hover:bg-[#E9F6F3]"
                     >
                       <span className="text-sm font-medium text-gray-800">{item.name}</span>

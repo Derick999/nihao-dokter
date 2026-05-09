@@ -1,10 +1,8 @@
 {
   "doctors": [
-    { "id": "doc-1", "name": "Dr. Sarah Wijaya", "specialty": "Dokter Umum", "link": "/layanan" },
-    { "id": "doc-2", "name": "Dr. Budi Santoso", "specialty": "Penyakit Dalam", "link": "/layanan" },
-    { "id": "doc-3", "name": "Dr. Rina Putri", "specialty": "Dokter Anak", "link": "/layanan" },
-    { "id": "doc-4", "name": "Dr. Andi Pratama", "specialty": "Dokter Kulit", "link": "/layanan" },
-    { "id": "doc-5", "name": "Dr. Kevin Halim", "specialty": "Dokter Saraf", "link": "/layanan" }
+    { "id": "doc-1", "name": "Dr. Daniel Paskalist", "specialty": "Dokter Umum" },
+    { "id": "doc-2", "name": "Dr. Vivi Florencia", "specialty": "Dokter Anak" },
+    { "id": "doc-3", "name": "Dr. Kevin Nugraha", "specialty": "Dokter Jantung" }
   ],
   "medicine": [
     { "id": "med-1", "name": "Paracetamol 500mg", "usage": "Demam dan nyeri ringan", "link": "/shop" },
