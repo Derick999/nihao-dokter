@@ -1,11 +1,37 @@
-import { Thermometer, Brain, Wind, ActivitySquare, Stethoscope, Activity, ShoppingBag, X, Star, ShieldCheck, Users, ArrowRight } from 'lucide-react';
+import {
+  Thermometer,
+  Brain,
+  Wind,
+  ActivitySquare,
+  Stethoscope,
+  Activity,
+  ShoppingBag,
+  X,
+  Star,
+  ShieldCheck,
+  Users,
+  ArrowRight,
+} from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import type { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { doctors } from '../data/doctors';
 import { savePendingDoctor } from '../utils/chatFlow';
 
 type HomeProps = {
   onOpenChat: (doctor: { name: string; img: string }) => void;
+};
+
+type SymptomSpecialty = 'Umum' | 'Anak' | 'Kulit';
+
+type SymptomItem = {
+  id: string;
+  name: string;
+  hint: string;
+  specialty: SymptomSpecialty;
+  icon: ReactNode;
+  buttonClassName: string;
 };
 
 export default function Home({ onOpenChat }: HomeProps) {
@@ -14,6 +40,8 @@ export default function Home({ onOpenChat }: HomeProps) {
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const [isTrustVisible, setIsTrustVisible] = useState(false);
   const [isTestimonialsVisible, setIsTestimonialsVisible] = useState(false);
+  const [selectedSymptom, setSelectedSymptom] = useState<SymptomItem | null>(null);
+  const [showSymptomModal, setShowSymptomModal] = useState(false);
   const heroFeatures = [
     { name: 'Chat Dokter', icon: <Stethoscope className="h-6 w-6" />, to: '/chat-dokter' },
     { name: 'Nihao Shop', icon: <ShoppingBag className="h-6 w-6" />, to: '/shop' },
@@ -47,6 +75,56 @@ export default function Home({ onOpenChat }: HomeProps) {
       name: 'Dimas Pratama',
       review: 'Pelayanan responsif, cocok buat yang butuh konsultasi cepat tanpa antre.',
       avatarSeed: 'dimas-pratama',
+    },
+  ];
+  const symptomItems: SymptomItem[] = [
+    {
+      id: 'demam',
+      name: 'Demam',
+      hint: 'Monitor suhu tubuh secara berkala dan pastikan hidrasi cukup. Jika suhu di atas 38°C, segera konsultasikan.',
+      specialty: 'Umum',
+      icon: <Thermometer className="h-5 w-5" />,
+      buttonClassName: 'border-orange-200 bg-orange-50 text-orange-700 hover:bg-orange-100',
+    },
+    {
+      id: 'sakit-kepala',
+      name: 'Sakit Kepala',
+      hint: 'Perhatikan intensitas nyeri dan apakah disertai mual atau gangguan penglihatan. Istirahat cukup dan konsultasikan bila keluhan menetap.',
+      specialty: 'Umum',
+      icon: <Brain className="h-5 w-5" />,
+      buttonClassName: 'border-purple-200 bg-purple-50 text-purple-700 hover:bg-purple-100',
+    },
+    {
+      id: 'batuk',
+      name: 'Batuk',
+      hint: 'Pantau frekuensi batuk, dahak, dan kondisi tenggorokan. Jika batuk berlangsung lebih dari 3 hari atau disertai sesak, segera periksa.',
+      specialty: 'Anak',
+      icon: <Wind className="h-5 w-5" />,
+      buttonClassName: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100',
+    },
+    {
+      id: 'pilek',
+      name: 'Pilek',
+      hint: 'Perhatikan sumbatan hidung, kualitas tidur, dan cairan tubuh. Gunakan cairan hangat dan konsultasi bila gejala mengganggu aktivitas.',
+      specialty: 'Anak',
+      icon: <Wind className="h-5 w-5" />,
+      buttonClassName: 'border-teal-200 bg-teal-50 text-teal-700 hover:bg-teal-100',
+    },
+    {
+      id: 'perut',
+      name: 'Perut',
+      hint: 'Amati lokasi nyeri perut dan pemicu setelah makan. Bila nyeri tajam, muntah berulang, atau diare berat, segera konsultasikan.',
+      specialty: 'Umum',
+      icon: <Activity className="h-5 w-5" />,
+      buttonClassName: 'border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100',
+    },
+    {
+      id: 'kulit',
+      name: 'Kulit',
+      hint: 'Perhatikan ruam, rasa gatal, dan perubahan warna kulit. Hindari menggaruk area iritasi dan konsultasikan jika meluas.',
+      specialty: 'Kulit',
+      icon: <ActivitySquare className="h-5 w-5" />,
+      buttonClassName: 'border-pink-200 bg-pink-50 text-pink-700 hover:bg-pink-100',
     },
   ];
 
@@ -154,6 +232,19 @@ export default function Home({ onOpenChat }: HomeProps) {
     navigate('/pilih-pasien');
   };
 
+  const handleOpenSymptomModal = (symptom: SymptomItem) => {
+    setSelectedSymptom(symptom);
+    setShowSymptomModal(true);
+  };
+
+  const handleFindRelatedDoctor = () => {
+    if (!selectedSymptom) {
+      return;
+    }
+    setShowSymptomModal(false);
+    navigate(`/chat-dokter?specialty=${encodeURIComponent(selectedSymptom.specialty)}`);
+  };
+
   return (
     <main className="flex-grow bg-white">
       <section
@@ -238,24 +329,17 @@ export default function Home({ onOpenChat }: HomeProps) {
           </div>
 
           <div className="flex flex-wrap justify-center gap-4">
-            <Link to="/artikel" className="flex items-center rounded-xl border border-orange-200 bg-orange-50 px-6 py-4 font-medium text-orange-700 transition-colors hover:bg-orange-100">
-              <Thermometer className="mr-2 h-5 w-5" /> Demam
-            </Link>
-            <Link to="/artikel" className="flex items-center rounded-xl border border-purple-200 bg-purple-50 px-6 py-4 font-medium text-purple-700 transition-colors hover:bg-purple-100">
-              <Brain className="mr-2 h-5 w-5" /> Sakit Kepala
-            </Link>
-            <Link to="/artikel" className="flex items-center rounded-xl border border-blue-200 bg-blue-50 px-6 py-4 font-medium text-blue-700 transition-colors hover:bg-blue-100">
-              <Wind className="mr-2 h-5 w-5" /> Batuk
-            </Link>
-            <Link to="/artikel" className="flex items-center rounded-xl border border-teal-200 bg-teal-50 px-6 py-4 font-medium text-teal-700 transition-colors hover:bg-teal-100">
-              <Wind className="mr-2 h-5 w-5" /> Pilek
-            </Link>
-            <Link to="/artikel" className="flex items-center rounded-xl border border-yellow-200 bg-yellow-50 px-6 py-4 font-medium text-yellow-700 transition-colors hover:bg-yellow-100">
-              <Activity className="mr-2 h-5 w-5" /> Perut
-            </Link>
-            <Link to="/artikel" className="flex items-center rounded-xl border border-pink-200 bg-pink-50 px-6 py-4 font-medium text-pink-700 transition-colors hover:bg-pink-100">
-              <ActivitySquare className="mr-2 h-5 w-5" /> Kulit
-            </Link>
+            {symptomItems.map((symptom) => (
+              <button
+                key={symptom.id}
+                type="button"
+                onClick={() => handleOpenSymptomModal(symptom)}
+                className={`flex items-center rounded-xl border px-6 py-4 font-medium transition-colors ${symptom.buttonClassName}`}
+              >
+                <span className="mr-2">{symptom.icon}</span>
+                {symptom.name}
+              </button>
+            ))}
           </div>
         </div>
       </section>
@@ -479,6 +563,45 @@ export default function Home({ onOpenChat }: HomeProps) {
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {showSymptomModal && selectedSymptom && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 px-4 py-6">
+          <motion.div
+            initial={{ opacity: 0, y: 14, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+              <div className="inline-flex items-center gap-2 text-[#268489]">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF7F4]">
+                  {selectedSymptom.icon}
+                </span>
+                <h3 className="text-base font-bold text-gray-900">Gejala: {selectedSymptom.name}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSymptomModal(false)}
+                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-slate-100 hover:text-gray-700"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="px-6 py-5">
+              <p className="text-sm leading-relaxed text-gray-600">{selectedSymptom.hint}</p>
+            </div>
+            <div className="flex justify-end border-t border-slate-100 px-6 py-4">
+              <button
+                type="button"
+                onClick={handleFindRelatedDoctor}
+                className="rounded-full bg-[#268489] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1f6f73]"
+              >
+                Cari Dokter Terkait
+              </button>
+            </div>
+          </motion.div>
         </div>
       )}
     </main>

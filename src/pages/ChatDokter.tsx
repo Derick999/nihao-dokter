@@ -1,6 +1,7 @@
 import {
   Baby,
   Brain,
+  CircleDot,
   CheckCircle2,
   Clock3,
   Ear,
@@ -23,7 +24,7 @@ import {
 } from '../utils/chatFlow';
 import BackButton from '../components/BackButton';
 
-type SpecialtyFilter = 'Semua' | 'Umum' | 'Anak' | 'THT' | 'Jantung' | 'Psikologi';
+type SpecialtyFilter = 'Semua' | 'Umum' | 'Anak' | 'THT' | 'Jantung' | 'Psikologi' | 'Kulit';
 
 type DoctorRecommendation = {
   id: number;
@@ -45,6 +46,7 @@ const specialtyFilters: Array<{ id: SpecialtyFilter; label: string; icon: ReactN
   { id: 'Semua', label: 'Semua', icon: <Stethoscope className="h-5 w-5" /> },
   { id: 'Umum', label: 'Umum', icon: <ShieldCheck className="h-5 w-5" /> },
   { id: 'Anak', label: 'Anak', icon: <Baby className="h-5 w-5" /> },
+  { id: 'Kulit', label: 'Kulit', icon: <CircleDot className="h-5 w-5" /> },
   { id: 'THT', label: 'THT', icon: <Ear className="h-5 w-5" /> },
   { id: 'Jantung', label: 'Jantung', icon: <HeartPulse className="h-5 w-5" /> },
   { id: 'Psikologi', label: 'Psikologi', icon: <Brain className="h-5 w-5" /> },
@@ -111,6 +113,7 @@ export default function ChatDokter() {
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [bookingStep, setBookingStep] = useState<BookingStep>('profile');
+  const [showQRISModal, setShowQRISModal] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const familyProfiles = useMemo(() => getFamilyProfiles(), []);
@@ -157,6 +160,15 @@ export default function ChatDokter() {
 
     return () => window.clearInterval(interval);
   }, [selectedDoctor]);
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const specialtyFromQuery = searchParams.get('specialty');
+    const allowedSpecialties: SpecialtyFilter[] = ['Semua', 'Umum', 'Anak', 'Kulit', 'THT', 'Jantung', 'Psikologi'];
+    if (specialtyFromQuery && allowedSpecialties.includes(specialtyFromQuery as SpecialtyFilter)) {
+      setSelectedSpecialty(specialtyFromQuery as SpecialtyFilter);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const state = location.state as { openDoctorName?: string } | null;
@@ -212,10 +224,11 @@ export default function ChatDokter() {
     setBookingStep('profile');
     setSelectedPatientId('');
     setSelectedPaymentMethod(null);
+    setShowQRISModal(false);
     setActiveReviewIndex(0);
   };
 
-  const handleConfirmPayment = () => {
+  const handleFinalPayment = () => {
     if (!selectedDoctor) {
       return;
     }
@@ -236,11 +249,25 @@ export default function ChatDokter() {
 
     setBookingStep('success');
     setShowSuccessNotification(true);
+    setShowQRISModal(false);
 
     window.setTimeout(() => {
       closeModal();
       navigate('/chat-room');
     }, 1400);
+  };
+
+  const handleConfirmPayment = () => {
+    if (!selectedPaymentMethod) {
+      return;
+    }
+
+    if (selectedPaymentMethod === 'QRIS') {
+      setShowQRISModal(true);
+      return;
+    }
+
+    handleFinalPayment();
   };
 
   if (!isLoggedIn) {
@@ -596,6 +623,44 @@ export default function ChatDokter() {
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedDoctor && showQRISModal && (
+        <div className="fixed inset-0 z-[85] flex items-center justify-center bg-slate-950/55 px-4 py-6">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl">
+            <div className="border-b border-slate-100 px-6 py-4">
+              <h3 className="text-lg font-bold text-gray-900">Pembayaran QRIS</h3>
+            </div>
+            <div className="space-y-4 px-6 py-5">
+              <div className="rounded-2xl border border-[#268489]/25 bg-[#F8FCFC] p-4">
+                <img
+                  src="/src/public/Nihao.png"
+                  alt="QRIS code"
+                  className="mx-auto h-64 w-64 rounded-xl border border-slate-200 bg-white object-contain p-2"
+                />
+              </div>
+              <p className="text-center text-sm text-gray-600">
+                Silakan scan kode QR di atas menggunakan aplikasi e-wallet atau mobile banking Anda.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setShowQRISModal(false)}
+                className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+              >
+                Batalkan
+              </button>
+              <button
+                type="button"
+                onClick={handleFinalPayment}
+                className="rounded-full bg-[#268489] px-5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1f6f73]"
+              >
+                Saya Sudah Bayar
+              </button>
             </div>
           </div>
         </div>

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Minus, Plus, ShoppingCart, Star, Trash2, X } from 'lucide-react';
-import { motion } from 'motion/react';
+import { CheckCircle2, Minus, Plus, ShoppingCart, Star, Trash2, WalletCards, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
 
@@ -19,6 +18,8 @@ type CartItem = {
   product: Product;
   quantity: number;
 };
+
+type PaymentMethod = 'QRIS' | 'VA';
 
 export default function Shop() {
   const navigate = useNavigate();
@@ -58,8 +59,9 @@ export default function Shop() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const [paymentProgress, setPaymentProgress] = useState(0);
-  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [showQRISModal, setShowQRISModal] = useState(false);
+  const [showSuccessNotification, setShowSuccessNotification] = useState(false);
 
   useEffect(() => {
     const storedCart = localStorage.getItem('nihao_cart_items');
@@ -128,43 +130,59 @@ export default function Shop() {
     setCartItems((current) => current.filter((item) => item.product.id !== productId));
   };
 
-  const startPaymentVerification = () => {
+  useEffect(() => {
+    if (!showSuccessNotification) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setShowSuccessNotification(false);
+    }, 2500);
+
+    return () => window.clearTimeout(timeout);
+  }, [showSuccessNotification]);
+
+  const completeOrder = () => {
     if (cartItems.length === 0) {
       return;
     }
 
-    setIsVerifyingPayment(true);
-    setPaymentProgress(0);
-    const startedAt = Date.now();
-    const durationMs = 3000;
-    const interval = window.setInterval(() => {
-      const elapsed = Date.now() - startedAt;
-      const nextProgress = Math.min((elapsed / durationMs) * 100, 100);
-      setPaymentProgress(nextProgress);
+    const transactionSummary = {
+      orderId: `NH-${Date.now()}`,
+      totalItems,
+      totalPrice,
+      paidAt: new Date().toISOString(),
+      items: cartItems.map((item) => ({
+        name: item.product.name,
+        qty: item.quantity,
+        subtotal: item.quantity * item.product.price,
+      })),
+    };
 
-      if (nextProgress >= 100) {
-        window.clearInterval(interval);
-        const transactionSummary = {
-          orderId: `NH-${Date.now()}`,
-          totalItems,
-          totalPrice,
-          paidAt: new Date().toISOString(),
-          items: cartItems.map((item) => ({
-            name: item.product.name,
-            qty: item.quantity,
-            subtotal: item.quantity * item.product.price,
-          })),
-        };
+    localStorage.setItem('nihao_last_transaction', JSON.stringify(transactionSummary));
+    localStorage.removeItem('nihao_cart_items');
+    setCartItems([]);
+    setIsCheckoutOpen(false);
+    setIsCartOpen(false);
+    setShowQRISModal(false);
+    setShowSuccessNotification(true);
 
-        localStorage.setItem('nihao_last_transaction', JSON.stringify(transactionSummary));
-        localStorage.removeItem('nihao_cart_items');
-        setCartItems([]);
-        setIsCheckoutOpen(false);
-        setIsCartOpen(false);
-        setIsVerifyingPayment(false);
-        navigate('/payment-success');
-      }
-    }, 100);
+    window.setTimeout(() => {
+      navigate('/payment-success');
+    }, 900);
+  };
+
+  const handleCheckoutPayment = () => {
+    if (!selectedPaymentMethod || cartItems.length === 0) {
+      return;
+    }
+
+    if (selectedPaymentMethod === 'QRIS') {
+      setShowQRISModal(true);
+      return;
+    }
+
+    completeOrder();
   };
 
   return (
@@ -301,7 +319,11 @@ export default function Shop() {
               </div>
               <button
                 type="button"
-                onClick={() => setIsCheckoutOpen(true)}
+                onClick={() => {
+                  setSelectedPaymentMethod(null);
+                  setShowQRISModal(false);
+                  setIsCheckoutOpen(true);
+                }}
                 disabled={cartItems.length === 0}
                 className="w-full rounded-xl bg-[#268489] px-4 py-3 text-sm font-semibold text-white transition enabled:hover:bg-[#1f6f73] disabled:cursor-not-allowed disabled:bg-gray-300"
               >
@@ -316,10 +338,10 @@ export default function Shop() {
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 px-4">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-900">Pembayaran QRIS</h3>
+              <h3 className="text-xl font-bold text-gray-900">Checkout</h3>
               <button
                 type="button"
-                onClick={() => !isVerifyingPayment && setIsCheckoutOpen(false)}
+                onClick={() => setIsCheckoutOpen(false)}
                 className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100"
                 aria-label="Close checkout modal"
               >
@@ -327,36 +349,93 @@ export default function Shop() {
               </button>
             </div>
 
-            <p className="mb-4 text-sm text-gray-500">Scan QRIS di bawah ini untuk menyelesaikan pembayaran.</p>
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-4">
-              <img
-                src="https://picsum.photos/seed/qris-placeholder/320/320"
-                alt="QRIS placeholder"
-                className="mx-auto h-56 w-56 rounded-xl object-cover"
-                referrerPolicy="no-referrer"
-              />
+            <p className="mb-4 text-sm text-gray-500">Pilih metode pembayaran untuk menyelesaikan pesanan Anda.</p>
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              {(['QRIS', 'VA'] as PaymentMethod[]).map((method) => (
+                <button
+                  key={method}
+                  type="button"
+                  onClick={() => setSelectedPaymentMethod(method)}
+                  className={`rounded-xl border px-3 py-3 text-left transition-colors ${
+                    selectedPaymentMethod === method
+                      ? 'border-[#268489] bg-[#EAF7F4]'
+                      : 'border-slate-200 bg-white hover:border-[#268489]/40'
+                  }`}
+                >
+                  <p className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900">
+                    <WalletCards className="h-4 w-4 text-[#268489]" />
+                    {method}
+                  </p>
+                  <p className="mt-1 text-xs text-gray-600">
+                    {method === 'QRIS'
+                      ? 'Bayar cepat dengan scan QR dari e-wallet atau mobile banking.'
+                      : 'Transfer virtual account dari bank pilihan Anda.'}
+                  </p>
+                </button>
+              ))}
             </div>
             <p className="mt-4 text-sm text-gray-600">Total bayar: <span className="font-bold text-[#0D503C]">{formatRupiah(totalPrice)}</span></p>
 
-            <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100">
-              <motion.div
-                className="h-full rounded-full bg-[#268489]"
-                animate={{ width: `${paymentProgress}%` }}
-                transition={{ duration: 0.1, ease: 'linear' }}
-              />
-            </div>
-            <p className="mt-2 text-xs text-gray-500">
-              {isVerifyingPayment ? 'Memverifikasi pembayaran...' : 'Klik tombol di bawah untuk simulasi verifikasi 3 detik.'}
-            </p>
-
             <button
               type="button"
-              onClick={startPaymentVerification}
-              disabled={isVerifyingPayment}
+              onClick={handleCheckoutPayment}
+              disabled={!selectedPaymentMethod || cartItems.length === 0}
               className="mt-5 w-full rounded-xl bg-[#268489] px-4 py-3 text-sm font-semibold text-white transition enabled:hover:bg-[#1f6f73] disabled:cursor-not-allowed disabled:bg-gray-300"
             >
-              {isVerifyingPayment ? 'Memproses...' : 'Pay Now'}
+              Checkout
             </button>
+          </div>
+        </div>
+      )}
+
+      {isCheckoutOpen && showQRISModal && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/55 px-4 py-6">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl">
+            <div className="border-b border-slate-100 px-6 py-4">
+              <h3 className="text-lg font-bold text-gray-900">Pembayaran QRIS</h3>
+            </div>
+            <div className="space-y-4 px-6 py-5">
+              <div className="rounded-2xl border border-[#268489]/25 bg-[#F8FCFC] p-4">
+                <img
+                  src="/src/public/Nihao.png"
+                  alt="QRIS code"
+                  className="mx-auto h-64 w-64 rounded-xl border border-slate-200 bg-white object-contain p-2"
+                />
+              </div>
+              <p className="text-center text-sm text-gray-600">
+                Silakan scan kode QR di atas menggunakan aplikasi e-wallet atau mobile banking Anda.
+              </p>
+              <p className="text-center text-sm text-gray-600">
+                Total bayar: <span className="font-bold text-[#0D503C]">{formatRupiah(totalPrice)}</span>
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 border-t border-slate-100 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setShowQRISModal(false)}
+                className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+              >
+                Batalkan
+              </button>
+              <button
+                type="button"
+                onClick={completeOrder}
+                className="rounded-full bg-[#268489] px-5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1f6f73]"
+              >
+                Saya Sudah Bayar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSuccessNotification && (
+        <div className="fixed right-4 top-6 z-[90] max-w-xs rounded-2xl border border-emerald-200 bg-emerald-50 p-3 shadow-lg">
+          <div className="flex items-start gap-2">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+            <p className="text-xs font-semibold text-emerald-700">
+              Pembayaran berhasil. Pesanan Anda sedang diproses.
+            </p>
           </div>
         </div>
       )}
