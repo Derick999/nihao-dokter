@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Minus, Plus, ShoppingCart, Star, Trash2, WalletCards, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
+import qrisImage from '../assets/images/my-qris.png';
 
 type Product = {
   id: number;
@@ -31,7 +32,7 @@ export default function Shop() {
       price: 15000,
       rating: 4.8,
       reviews: 124,
-      img: 'https://picsum.photos/seed/medicine1/300/300',
+      img: '/shop/paracetamol.jpg',
       description: 'Obat penurun panas dan pereda nyeri ringan hingga sedang.'
     },
     {
@@ -41,7 +42,7 @@ export default function Shop() {
       price: 45000,
       rating: 4.9,
       reviews: 342,
-      img: 'https://picsum.photos/seed/medicine2/300/300',
+      img: '/shop/VITAMIN C.jpg',
       description: 'Suplemen vitamin C untuk menjaga daya tahan tubuh.'
     },
     {
@@ -51,7 +52,7 @@ export default function Shop() {
       price: 85000,
       rating: 5.0,
       reviews: 89,
-      img: 'https://picsum.photos/seed/medicine3/300/300',
+      img: '/shop/honey jar.jpg',
       description: 'Madu murni alami untuk kesehatan dan stamina.'
     }
   ];
@@ -160,6 +161,31 @@ export default function Shop() {
     };
 
     localStorage.setItem('nihao_last_transaction', JSON.stringify(transactionSummary));
+    const now = new Date();
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    const formattedDate = `${String(now.getDate()).padStart(2, '0')} ${monthLabels[now.getMonth()]} ${now.getFullYear()}, ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const newShopHistory = cartItems.map((item) => ({
+      id: `shop-${Date.now()}-${item.product.id}`,
+      type: 'Pesanan Shop' as const,
+      productName: item.product.name,
+      price: formatRupiah(item.product.price * item.quantity),
+      image: item.product.img,
+      date: formattedDate,
+      status: 'Selesai' as const,
+    }));
+    const previousShopHistoryRaw = localStorage.getItem('shop_order_history');
+    let previousShopHistory: unknown[] = [];
+    if (previousShopHistoryRaw) {
+      try {
+        const parsedHistory = JSON.parse(previousShopHistoryRaw);
+        if (Array.isArray(parsedHistory)) {
+          previousShopHistory = parsedHistory;
+        }
+      } catch {
+        previousShopHistory = [];
+      }
+    }
+    localStorage.setItem('shop_order_history', JSON.stringify([...newShopHistory, ...previousShopHistory]));
     localStorage.removeItem('nihao_cart_items');
     setCartItems([]);
     setIsCheckoutOpen(false);
@@ -217,7 +243,7 @@ export default function Shop() {
                 <img 
                   src={product.img} 
                   alt={product.name} 
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                   referrerPolicy="no-referrer"
                 />
                 <div className="absolute top-4 right-4 bg-white px-3 py-1 rounded-full text-sm font-semibold text-[#2E7D32] shadow-sm">
@@ -397,7 +423,7 @@ export default function Shop() {
             <div className="space-y-4 px-6 py-5">
               <div className="rounded-2xl border border-[#268489]/25 bg-[#F8FCFC] p-4">
                 <img
-                  src="/src/public/Nihao.png"
+                  src={qrisImage}
                   alt="QRIS code"
                   className="mx-auto h-64 w-64 rounded-xl border border-slate-200 bg-white object-contain p-2"
                 />

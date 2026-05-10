@@ -57,8 +57,8 @@ const shopItems: ShopHistoryItem[] = [
     id: 'shop-1',
     type: 'Pesanan Shop',
     productName: 'Paracetamol 500mg',
-    price: 'Rp 28.000',
-    image: 'https://picsum.photos/seed/paracetamol/200/200',
+    price: 'Rp 15.000',
+    image: '/shop/paracetamol.jpg',
     date: '07 Mei 2026, 14:22',
     status: 'Selesai',
   },
@@ -66,9 +66,18 @@ const shopItems: ShopHistoryItem[] = [
     id: 'shop-2',
     type: 'Pesanan Shop',
     productName: 'Vitamin C 1000mg',
-    price: 'Rp 65.000',
-    image: 'https://picsum.photos/seed/vitamin-c/200/200',
+    price: 'Rp 45.000',
+    image: '/shop/VITAMIN C.jpg',
     date: '08 Mei 2026, 09:05',
+    status: 'Selesai',
+  },
+  {
+    id: 'shop-3',
+    type: 'Pesanan Shop',
+    productName: 'Madu Murni 500ml',
+    price: 'Rp 85.000',
+    image: '/shop/honey jar.jpg',
+    date: '08 Mei 2026, 09:20',
     status: 'Selesai',
   },
 ];
@@ -112,6 +121,7 @@ export default function Riwayat() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('Semua');
   const [activeSessionSnapshot, setActiveSessionSnapshot] = useState(getActiveSession());
   const [storedConsultationItems, setStoredConsultationItems] = useState<ConsultationHistoryItem[]>([]);
+  const [storedShopItems, setStoredShopItems] = useState<ShopHistoryItem[]>([]);
   const [selectedChat, setSelectedChat] = useState<ConsultationHistoryItem | null>(null);
 
   const mockConversation = useMemo(
@@ -128,6 +138,45 @@ export default function Riwayat() {
       setActiveSessionSnapshot(getActiveSession());
     }, 1000);
     return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const loadShopHistory = () => {
+      try {
+        const savedRaw = localStorage.getItem('shop_order_history');
+        if (!savedRaw) {
+          setStoredShopItems([]);
+          return;
+        }
+        const parsed = JSON.parse(savedRaw) as unknown;
+        if (!Array.isArray(parsed)) {
+          setStoredShopItems([]);
+          return;
+        }
+        const validItems = parsed.filter((item): item is ShopHistoryItem => {
+          if (!item || typeof item !== 'object') {
+            return false;
+          }
+          const candidate = item as Record<string, unknown>;
+          return (
+            typeof candidate.id === 'string' &&
+            candidate.type === 'Pesanan Shop' &&
+            typeof candidate.productName === 'string' &&
+            typeof candidate.price === 'string' &&
+            typeof candidate.image === 'string' &&
+            typeof candidate.date === 'string' &&
+            candidate.status === 'Selesai'
+          );
+        });
+        setStoredShopItems(validItems);
+      } catch {
+        setStoredShopItems([]);
+      }
+    };
+
+    loadShopHistory();
+    window.addEventListener('storage', loadShopHistory);
+    return () => window.removeEventListener('storage', loadShopHistory);
   }, []);
 
   useEffect(() => {
@@ -179,7 +228,8 @@ export default function Riwayat() {
   const allItems = useMemo<HistoryItem[]>(
     () => {
       const combinedItems = [...storedConsultationItems, ...consultationItems, ...shopItems];
-      return combinedItems.sort((a, b) => {
+      const combinedWithStoredShop = [...combinedItems, ...storedShopItems];
+      return combinedWithStoredShop.sort((a, b) => {
         const idDiff = getIdTimestamp(b.id) - getIdTimestamp(a.id);
         if (idDiff !== 0) {
           return idDiff;
@@ -187,7 +237,7 @@ export default function Riwayat() {
         return parseHistoryDate(b.date) - parseHistoryDate(a.date);
       });
     },
-    [storedConsultationItems],
+    [storedConsultationItems, storedShopItems],
   );
 
   const filteredItems = useMemo(() => {
