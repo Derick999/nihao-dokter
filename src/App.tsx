@@ -9,7 +9,6 @@ import Home from './pages/Home';
 import Shop from './pages/Shop';
 import Artikel from './pages/Artikel';
 import ArticleDetail from './pages/ArticleDetail';
-import Layanan from './pages/Layanan';
 import ChatDokter from './pages/ChatDokter';
 import Riwayat from './pages/Riwayat';
 import PilihPasien from './pages/PilihPasien';
@@ -93,7 +92,6 @@ function AppShell() {
       )}
       <Routes>
         <Route path="/" element={<Home onOpenChat={handleOpenChat} />} />
-        <Route path="/layanan" element={<Layanan onOpenChat={handleOpenChat} />} />
         <Route path="/riwayat" element={<Riwayat />} />
         <Route path="/chat-dokter" element={<ChatDokter />} />
         <Route path="/pilih-pasien" element={<PilihPasien />} />
