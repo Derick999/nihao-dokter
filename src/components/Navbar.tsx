@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { ShoppingBag, Menu, X, House, BookOpen, Stethoscope, LogOut, User, Info } from 'lucide-react';
 import { useState } from 'react';
 import { StoredUser } from '../utils/auth';
@@ -11,9 +11,9 @@ type NavbarProps = {
 
 export default function Navbar({ currentUser, onLogout }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
   const navLinks = [
     { name: 'Beranda', path: '/', icon: <House className="h-4 w-4" /> },
+    { name: 'Chat Dokter', path: '/chat-dokter', icon: <Stethoscope className="h-4 w-4" /> },
     { name: 'Riwayat', path: '/riwayat', icon: <Stethoscope className="h-4 w-4" /> },
     { name: 'Nihao Shop', path: '/shop', icon: <ShoppingBag className="h-4 w-4" /> },
     { name: 'Artikel', path: '/artikel', icon: <BookOpen className="h-4 w-4" /> },
@@ -40,18 +40,21 @@ export default function Navbar({ currentUser, onLogout }: NavbarProps) {
           {/* Desktop Menu */}
           <div className="hidden md:flex md:items-center md:space-x-2 lg:space-x-3">
             {navLinks.map((link) => (
-              <Link
+              <NavLink
                 key={link.path}
                 to={link.path}
-                className={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
-                  location.pathname === link.path
-                    ? 'bg-[#E9F6F3] text-[#268489]'
-                    : 'text-gray-700 hover:bg-gray-50 hover:text-[#268489]'
-                }`}
+                end={link.path === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-[#E9F6F3] text-[#268489]'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-[#268489]'
+                  }`
+                }
               >
                 {link.icon}
                 {link.name}
-              </Link>
+              </NavLink>
             ))}
 
             <div className="h-6 w-[1px] bg-gray-200 mx-2"></div>
@@ -105,19 +108,22 @@ export default function Navbar({ currentUser, onLogout }: NavbarProps) {
         <div className="border-t border-gray-100 bg-white md:hidden animate-in fade-in slide-in-from-top-4">
           <div className="space-y-3 px-4 pb-5 pt-4">
             {navLinks.map((link) => (
-              <Link
+              <NavLink
                 key={link.path}
                 to={link.path}
+                end={link.path === '/'}
                 onClick={() => setIsOpen(false)}
-                className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium ${
-                  location.pathname === link.path
-                    ? 'bg-[#E9F6F3] text-[#268489]'
-                    : 'text-gray-700'
-                }`}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-[#E9F6F3] text-[#268489]'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-[#268489]'
+                  }`
+                }
               >
                 {link.icon}
                 {link.name}
-              </Link>
+              </NavLink>
             ))}
 
             <div className="border-t border-gray-50 pt-3">
