@@ -13,6 +13,12 @@ type ConsultationHistoryItem = {
   specialty: string;
   avatarSeed: string;
   date: string;
+  transcript?: Array<{
+    id: number;
+    sender: 'dokter' | 'pasien';
+    content: string;
+    time: string;
+  }>;
 };
 
 type ShopHistoryItem = {
@@ -69,9 +75,53 @@ const shopItems: ShopHistoryItem[] = [
 
 const filters: FilterType[] = ['Semua', 'Konsultasi Dokter', 'Pesanan Shop'];
 
+const monthToNumber: Record<string, number> = {
+  Jan: 0,
+  Feb: 1,
+  Mar: 2,
+  Apr: 3,
+  Mei: 4,
+  Jun: 5,
+  Jul: 6,
+  Agu: 7,
+  Sep: 8,
+  Okt: 9,
+  Nov: 10,
+  Des: 11,
+};
+
+const parseHistoryDate = (value: string) => {
+  const matched = value.match(/^(\d{2})\s([A-Za-z]+)\s(\d{4}),\s(\d{2}):(\d{2})$/);
+  if (!matched) {
+    return 0;
+  }
+  const [, day, monthLabel, year, hour, minute] = matched;
+  const month = monthToNumber[monthLabel];
+  if (month === undefined) {
+    return 0;
+  }
+  return new Date(Number(year), month, Number(day), Number(hour), Number(minute)).getTime();
+};
+
+const getIdTimestamp = (id: string) => {
+  const matched = id.match(/-(\d+)$/);
+  return matched ? Number(matched[1]) : 0;
+};
+
 export default function Riwayat() {
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('Semua');
   const [activeSessionSnapshot, setActiveSessionSnapshot] = useState(getActiveSession());
+  const [storedConsultationItems, setStoredConsultationItems] = useState<ConsultationHistoryItem[]>([]);
+  const [selectedChat, setSelectedChat] = useState<ConsultationHistoryItem | null>(null);
+
+  const mockConversation = useMemo(
+    () => [
+      { id: 1, sender: 'dokter' as const, content: 'Halo, silakan ceritakan keluhan utama Anda.', time: '20:10' },
+      { id: 2, sender: 'pasien' as const, content: 'Saya demam sejak tadi malam, Dok.', time: '20:11' },
+      { id: 3, sender: 'dokter' as const, content: 'Baik, tetap cukup cairan dan pantau suhu tiap 4 jam ya.', time: '20:12' },
+    ],
+    [],
+  );
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -80,13 +130,64 @@ export default function Riwayat() {
     return () => window.clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const loadHistory = () => {
+      try {
+        const savedRaw = localStorage.getItem('consultation_history');
+        if (!savedRaw) {
+          setStoredConsultationItems([]);
+          return;
+        }
+
+        const parsed = JSON.parse(savedRaw) as unknown;
+        if (!Array.isArray(parsed)) {
+          setStoredConsultationItems([]);
+          return;
+        }
+
+        const validItems = parsed.filter((item): item is ConsultationHistoryItem => {
+          if (!item || typeof item !== 'object') {
+            return false;
+          }
+          const candidate = item as Record<string, unknown>;
+          return (
+            typeof candidate.id === 'string' &&
+            candidate.type === 'Konsultasi Dokter' &&
+            typeof candidate.doctorName === 'string' &&
+            typeof candidate.specialty === 'string' &&
+            typeof candidate.avatarSeed === 'string' &&
+            typeof candidate.date === 'string' &&
+            (candidate.transcript === undefined || Array.isArray(candidate.transcript))
+          );
+        });
+
+        setStoredConsultationItems(validItems);
+      } catch {
+        setStoredConsultationItems([]);
+      }
+    };
+
+    loadHistory();
+    window.addEventListener('storage', loadHistory);
+    return () => window.removeEventListener('storage', loadHistory);
+  }, []);
+
   const hasActiveSession = Boolean(
     activeSessionSnapshot && isSessionStillActive(activeSessionSnapshot.startedAt),
   );
 
   const allItems = useMemo<HistoryItem[]>(
-    () => [...consultationItems, ...shopItems].sort((a, b) => (a.id < b.id ? 1 : -1)),
-    [],
+    () => {
+      const combinedItems = [...storedConsultationItems, ...consultationItems, ...shopItems];
+      return combinedItems.sort((a, b) => {
+        const idDiff = getIdTimestamp(b.id) - getIdTimestamp(a.id);
+        if (idDiff !== 0) {
+          return idDiff;
+        }
+        return parseHistoryDate(b.date) - parseHistoryDate(a.date);
+      });
+    },
+    [storedConsultationItems],
   );
 
   const filteredItems = useMemo(() => {
@@ -151,90 +252,139 @@ export default function Riwayat() {
         </section>
 
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-bold text-gray-900 sm:text-xl">Riwayat Aktivitas</h2>
-            <div className="flex flex-wrap gap-2">
-              {filters.map((filter) => (
+          {selectedChat ? (
+            <>
+              <div className="mb-4 flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900 sm:text-xl">Detail Transkrip Konsultasi</h2>
+                  <p className="mt-1 text-xs font-medium text-[#268489]">{selectedChat.doctorName}</p>
+                </div>
                 <button
-                  key={filter}
                   type="button"
-                  onClick={() => setSelectedFilter(filter)}
-                  className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors sm:text-sm ${
-                    selectedFilter === filter
-                      ? 'bg-[#268489] text-white'
-                      : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
-                  }`}
+                  onClick={() => setSelectedChat(null)}
+                  className="rounded-full border border-slate-300 px-4 py-2 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-100"
                 >
-                  {filter}
+                  Back
                 </button>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          <div className="space-y-3">
-            {filteredItems.map((item) =>
-              item.type === 'Konsultasi Dokter' ? (
-                <article
-                  key={item.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-                >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex min-w-0 items-start gap-3">
-                      <img
-                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.avatarSeed}`}
-                        alt={`${item.doctorName} profile`}
-                        className="h-12 w-12 rounded-full border border-slate-200 bg-slate-100"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="min-w-0">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-semibold text-sky-700">
-                          <Stethoscope className="h-3.5 w-3.5" />
-                          Konsultasi
-                        </span>
-                        <h3 className="mt-2 truncate text-sm font-bold text-gray-900 sm:text-base">{item.doctorName}</h3>
-                        <p className="text-xs font-medium text-[#268489]">{item.specialty}</p>
-                        <p className="mt-1 text-xs text-gray-500">{item.date}</p>
-                      </div>
-                    </div>
-                    <Link
-                      to="/"
-                      className="inline-flex items-center justify-center rounded-full bg-[#268489] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1f6f73]"
+              <div className="h-[420px] space-y-3 overflow-y-auto rounded-2xl border border-slate-200 bg-[#EDF6F8] px-4 py-4 sm:px-5">
+                {(selectedChat.transcript && selectedChat.transcript.length > 0
+                  ? selectedChat.transcript
+                  : mockConversation
+                ).map((message) => (
+                  <div key={message.id} className={`flex ${message.sender === 'pasien' ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
+                        message.sender === 'pasien'
+                          ? 'rounded-br-md bg-[#D7F0EE] text-gray-800'
+                          : 'rounded-bl-md bg-white text-gray-700'
+                      }`}
                     >
-                      Chat Ulang
-                    </Link>
-                  </div>
-                </article>
-              ) : (
-                <article
-                  key={item.id}
-                  className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-                >
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex min-w-0 items-start gap-3">
-                      <img
-                        src={item.image}
-                        alt={item.productName}
-                        className="h-12 w-12 rounded-xl border border-slate-200 bg-slate-100 object-cover"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="min-w-0">
-                        <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-1 text-[11px] font-semibold text-purple-700">
-                          <Package className="h-3.5 w-3.5" />
-                          Shop
-                        </span>
-                        <h3 className="mt-2 truncate text-sm font-bold text-gray-900 sm:text-base">{item.productName}</h3>
-                        <p className="text-xs font-medium text-[#0D503C]">{item.price}</p>
-                        <p className="mt-1 text-xs text-gray-500">{item.date}</p>
-                      </div>
+                      <p>{message.content}</p>
+                      <p className="mt-1 text-right text-[11px] text-gray-500">{message.time}</p>
                     </div>
-                    <span className="inline-flex items-center justify-center rounded-full bg-emerald-100 px-4 py-2 text-xs font-semibold text-emerald-700">
-                      {item.status}
-                    </span>
                   </div>
-                </article>
-              ),
-            )}
-          </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-lg font-bold text-gray-900 sm:text-xl">Riwayat Aktivitas</h2>
+                <div className="flex flex-wrap gap-2">
+                  {filters.map((filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => setSelectedFilter(filter)}
+                      className={`rounded-full px-4 py-2 text-xs font-semibold transition-colors sm:text-sm ${
+                        selectedFilter === filter
+                          ? 'bg-[#268489] text-white'
+                          : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+                      }`}
+                    >
+                      {filter}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {filteredItems.map((item) =>
+                  item.type === 'Konsultasi Dokter' ? (
+                    <article
+                      key={item.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                    >
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <img
+                            src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.avatarSeed}`}
+                            alt={`${item.doctorName} profile`}
+                            className="h-12 w-12 rounded-full border border-slate-200 bg-slate-100"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="min-w-0">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-sky-100 px-2.5 py-1 text-[11px] font-semibold text-sky-700">
+                              <Stethoscope className="h-3.5 w-3.5" />
+                              Konsultasi
+                            </span>
+                            <h3 className="mt-2 truncate text-sm font-bold text-gray-900 sm:text-base">{item.doctorName}</h3>
+                            <p className="text-xs font-medium text-[#268489]">{item.specialty}</p>
+                            <p className="mt-1 text-xs text-gray-500">{item.date}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedChat(item)}
+                            className="inline-flex items-center justify-center rounded-full border border-[#268489] px-4 py-2 text-xs font-semibold text-[#268489] hover:bg-[#EAF7F4]"
+                          >
+                            Lihat Detail
+                          </button>
+                          <Link
+                            to="/"
+                            className="inline-flex items-center justify-center rounded-full bg-[#268489] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1f6f73]"
+                          >
+                            Chat Ulang
+                          </Link>
+                        </div>
+                      </div>
+                    </article>
+                  ) : (
+                    <article
+                      key={item.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+                    >
+                      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex min-w-0 items-start gap-3">
+                          <img
+                            src={item.image}
+                            alt={item.productName}
+                            className="h-12 w-12 rounded-xl border border-slate-200 bg-slate-100 object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="min-w-0">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-2.5 py-1 text-[11px] font-semibold text-purple-700">
+                              <Package className="h-3.5 w-3.5" />
+                              Shop
+                            </span>
+                            <h3 className="mt-2 truncate text-sm font-bold text-gray-900 sm:text-base">{item.productName}</h3>
+                            <p className="text-xs font-medium text-[#0D503C]">{item.price}</p>
+                            <p className="mt-1 text-xs text-gray-500">{item.date}</p>
+                          </div>
+                        </div>
+                        <span className="inline-flex items-center justify-center rounded-full bg-emerald-100 px-4 py-2 text-xs font-semibold text-emerald-700">
+                          {item.status}
+                        </span>
+                      </div>
+                    </article>
+                  ),
+                )}
+              </div>
+            </>
+          )}
         </section>
       </section>
     </main>
