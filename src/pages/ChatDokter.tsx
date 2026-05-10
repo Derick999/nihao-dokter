@@ -34,6 +34,7 @@ type DoctorRecommendation = {
   experience: string;
   price: number;
   avatarSeed: string;
+  image: string;
   credentials: string;
   bio: string;
   reviews: Array<{ id: number; text: string; author: string }>;
@@ -61,6 +62,7 @@ const popularDoctors: DoctorRecommendation[] = [
     experience: '5 Tahun',
     price: 75000,
     avatarSeed: 'dr-daniel-paskalist',
+    image: '/dokter/dokter derrick.jpg',
     credentials: 'SIP Aktif, Alumni Fakultas Kedokteran UI, 5+ tahun praktik klinis.',
     bio: 'Fokus pada keluhan umum harian, skrining gejala awal, dan edukasi pasien yang mudah dipahami.',
     reviews: [
@@ -77,6 +79,7 @@ const popularDoctors: DoctorRecommendation[] = [
     experience: '8 Tahun',
     price: 110000,
     avatarSeed: 'dr-vivi-florencia',
+    image: '/dokter/dokter punjabi.jpg',
     credentials: 'Spesialis Anak, pengalaman 8 tahun di layanan tumbuh kembang.',
     bio: 'Mendampingi konsultasi kesehatan anak dengan pendekatan ramah keluarga dan berbasis bukti.',
     reviews: [
@@ -93,12 +96,64 @@ const popularDoctors: DoctorRecommendation[] = [
     experience: '10 Tahun',
     price: 130000,
     avatarSeed: 'dr-kevin-nugraha',
+    image: '/dokter/dokter kevin.jpg',
     credentials: 'Spesialis Jantung, 10+ tahun pengalaman klinis dan telekonsultasi.',
     bio: 'Berfokus pada evaluasi gejala kardiovaskular awal dan rekomendasi perubahan gaya hidup jangka panjang.',
     reviews: [
       { id: 1, text: 'Saran pola hidupnya praktis dan bisa langsung diterapkan.', author: 'Riko, 40' },
       { id: 2, text: 'Penjelasan kondisi jantung jadi lebih mudah dipahami.', author: 'Maya, 38' },
       { id: 3, text: 'Konsultasi profesional dan menenangkan.', author: 'Dwi, 45' },
+    ],
+  },
+  {
+    id: 4,
+    name: 'Dr. Siti Rahmawati',
+    title: 'Sp.PD',
+    specialization: 'Umum',
+    experience: '7 Tahun',
+    price: 95000,
+    avatarSeed: 'dr-siti-rahmawati',
+    image: '/dokter/dokter sigma.jpg',
+    credentials: 'Spesialis Penyakit Dalam dengan pengalaman 7 tahun menangani keluhan metabolik dan infeksi.',
+    bio: 'Fokus pada evaluasi keluhan penyakit dalam, pemantauan kondisi kronis, dan edukasi pencegahan berkelanjutan.',
+    reviews: [
+      { id: 1, text: 'Penjelasan diagnosis jelas dan mudah dipahami.', author: 'Laras, 33' },
+      { id: 2, text: 'Sangat teliti saat menanyakan riwayat keluhan.', author: 'Fajar, 39' },
+      { id: 3, text: 'Rencana tindak lanjutnya detail dan praktis.', author: 'Mila, 36' },
+    ],
+  },
+  {
+    id: 5,
+    name: 'Dr. Budi Santoso',
+    title: 'Sp.THT',
+    specialization: 'THT',
+    experience: '6 Tahun',
+    price: 85000,
+    avatarSeed: 'dr-budi-santoso',
+    image: '/dokter/dokter strange.jpg',
+    credentials: 'Spesialis THT dengan pengalaman 6 tahun menangani gangguan telinga, hidung, dan tenggorokan.',
+    bio: 'Membantu evaluasi gejala THT akut maupun berulang dengan pendekatan yang terarah dan komunikatif.',
+    reviews: [
+      { id: 1, text: 'Keluhan telinga saya ditangani dengan cepat.', author: 'Rudi, 30' },
+      { id: 2, text: 'Saran perawatan di rumah sangat membantu.', author: 'Nina, 28' },
+      { id: 3, text: 'Dokter ramah dan detail menjelaskan kondisi.', author: 'Andre, 41' },
+    ],
+  },
+  {
+    id: 6,
+    name: 'Dr. Amanda Putri',
+    title: 'M.Psi',
+    specialization: 'Psikologi',
+    experience: '5 Tahun',
+    price: 120000,
+    avatarSeed: 'dr-amanda-putri',
+    image: '/dokter/dokter strange.jpg',
+    credentials: 'Psikolog klinis dengan pengalaman 5 tahun dalam pendampingan stres, kecemasan, dan burnout.',
+    bio: 'Berfokus pada konseling suportif dan strategi coping yang bisa diterapkan dalam rutinitas harian.',
+    reviews: [
+      { id: 1, text: 'Sesi terasa aman dan membuat saya lebih tenang.', author: 'Santi, 27' },
+      { id: 2, text: 'Teknik coping yang diberikan efektif dipraktikkan.', author: 'Bagas, 32' },
+      { id: 3, text: 'Pendekatannya empatik dan tidak menghakimi.', author: 'Dina, 29' },
     ],
   },
 ];
@@ -355,9 +410,9 @@ export default function ChatDokter() {
               >
                 <div className="flex items-center gap-3">
                   <img
-                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${doctor.avatarSeed}`}
+                    src={doctor.image}
                     alt={doctor.name}
-                    className="h-12 w-12 rounded-full border border-slate-200 bg-slate-100"
+                    className="h-12 w-12 rounded-full border border-slate-200 bg-slate-100 object-cover aspect-square"
                     referrerPolicy="no-referrer"
                   />
                   <div>
@@ -446,9 +501,9 @@ export default function ChatDokter() {
             <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
               <div className="flex items-center gap-3">
                 <img
-                  src={`https://api.dicebear.com/7.x/initials/svg?seed=${selectedDoctor.avatarSeed}`}
+                  src={selectedDoctor.image}
                   alt={selectedDoctor.name}
-                  className="h-14 w-14 rounded-full border border-slate-200 bg-slate-100"
+                  className="h-14 w-14 rounded-full border border-slate-200 bg-slate-100 object-cover aspect-square"
                   referrerPolicy="no-referrer"
                 />
                 <div>

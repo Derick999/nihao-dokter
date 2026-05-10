@@ -394,7 +394,7 @@ export default function Home({ onOpenChat }: HomeProps) {
                   <img 
                     src={doc.img} 
                     alt={doc.name} 
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-cover aspect-square"
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute top-3 right-3 bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full flex items-center shadow-sm">
@@ -506,7 +506,7 @@ export default function Home({ onOpenChat }: HomeProps) {
                 <img
                   src={selectedDoctor.img}
                   alt={selectedDoctor.name}
-                  className="h-14 w-14 rounded-full border border-slate-200 bg-slate-100"
+                  className="h-14 w-14 rounded-full border border-slate-200 bg-slate-100 object-cover aspect-square"
                   referrerPolicy="no-referrer"
                 />
                 <div>
