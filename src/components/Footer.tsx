@@ -9,7 +9,7 @@ export default function Footer({ onOpenChat }: FooterProps) {
   return (
     <footer className="bg-white border-t border-gray-200 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
           <div className="col-span-1 md:col-span-1">
             <Link to="/" className="flex items-center shrink-0 mb-4">
               <div className="w-8 h-8 bg-[#D32F2F] rounded-full flex items-center justify-center mr-2">
@@ -17,7 +17,7 @@ export default function Footer({ onOpenChat }: FooterProps) {
               </div>
               <span className="font-bold text-2xl tracking-tight">
                 <span className="text-[#D32F2F]">Nihao</span>
-                <span className="text-[##268489]">Dokter</span>
+                <span className="text-[#268489]">Dokter</span>
               </span>
             </Link>
             <p className="text-gray-500 text-sm mb-4">
@@ -41,6 +41,64 @@ export default function Footer({ onOpenChat }: FooterProps) {
                 <Linkedin className="h-6 w-6" />
               </a>
             </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
+              Partner Kami
+            </h3>
+            <ul className="space-y-4">
+              <li>
+                <a
+                  href="https://www.denifferscookies.web.id"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                >
+                  Deniffer&apos;s Cookies
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.zaffrino.site/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                >
+                  Zaffrino
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://sites.google.com/view/pawbieast/beranda"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                >
+                  Pawbieast
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.inirasa.biz.id/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                >
+                  Inirasa
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://kicaucafe.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                >
+                  Kicau Cafe
+                </a>
+              </li>
+            </ul>
           </div>
 
           <div>
