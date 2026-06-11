@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ChatWidget from './components/ChatWidget';
@@ -87,6 +88,7 @@ function AppShell() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white font-sans">
+      <Toaster position="top-center" />
       {!isAuthPage && (
         <Navbar currentUser={currentUser} onLogout={handleLogout} />
       )}

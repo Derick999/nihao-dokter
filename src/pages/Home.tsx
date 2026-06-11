@@ -378,6 +378,49 @@ export default function Home({ onOpenChat }: HomeProps) {
         </div>
       </section>
 
+      <section
+        id="customer-testimonials"
+        className={`bg-[#F9FCFD] py-16 transition-all duration-700 ${
+          isTestimonialsVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
+        }`}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-10 text-center">
+            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Apa Kata Mereka?</h2>
+            <p className="mt-3 text-gray-600">Cerita singkat dari pasien yang sudah merasakan manfaat NihaoDokter.</p>
+          </div>
+
+          <div className="grid snap-x snap-mandatory grid-cols-1 gap-5 overflow-x-auto pb-2 sm:grid-cols-2 lg:grid-cols-4">
+            {testimonials.map((item) => (
+              <article
+                key={item.id}
+                className="min-w-[260px] snap-start rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <div className="mb-4 flex items-center gap-3">
+                  <img
+                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.avatarSeed}`}
+                    alt={item.name}
+                    className="h-10 w-10 rounded-full border border-slate-200 bg-slate-100"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">{item.name}</p>
+                    <p className="text-xs text-gray-500">Pasien NihaoDokter</p>
+                  </div>
+                </div>
+                <p className="text-sm leading-relaxed text-gray-600">{item.review}</p>
+                <div className="mt-4 flex items-center gap-1 text-amber-500">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Star key={`${item.id}-${index}`} className="h-4 w-4 fill-current" />
+                  ))}
+                  <span className="ml-2 text-xs font-semibold text-amber-600">5.0/5.0</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
@@ -394,7 +437,7 @@ export default function Home({ onOpenChat }: HomeProps) {
                   <img 
                     src={doc.img} 
                     alt={doc.name} 
-                    className="w-full h-48 object-cover aspect-square"
+                    className="w-full h-48 object-cover object-top aspect-square bg-slate-50"
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute top-3 right-3 bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded-full flex items-center shadow-sm">
@@ -455,48 +498,7 @@ export default function Home({ onOpenChat }: HomeProps) {
         </div>
       </section>
 
-      <section
-        id="customer-testimonials"
-        className={`bg-[#F9FCFD] py-16 transition-all duration-700 ${
-          isTestimonialsVisible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'
-        }`}
-      >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-10 text-center">
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">Apa Kata Mereka?</h2>
-            <p className="mt-3 text-gray-600">Cerita singkat dari pasien yang sudah merasakan manfaat NihaoDokter.</p>
-          </div>
-
-          <div className="grid snap-x snap-mandatory grid-cols-1 gap-5 overflow-x-auto pb-2 sm:grid-cols-2 lg:grid-cols-4">
-            {testimonials.map((item) => (
-              <article
-                key={item.id}
-                className="min-w-[260px] snap-start rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
-              >
-                <div className="mb-4 flex items-center gap-3">
-                  <img
-                    src={`https://api.dicebear.com/7.x/initials/svg?seed=${item.avatarSeed}`}
-                    alt={item.name}
-                    className="h-10 w-10 rounded-full border border-slate-200 bg-slate-100"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">{item.name}</p>
-                    <p className="text-xs text-gray-500">Pasien NihaoDokter</p>
-                  </div>
-                </div>
-                <p className="text-sm leading-relaxed text-gray-600">{item.review}</p>
-                <div className="mt-4 flex items-center gap-1 text-amber-500">
-                  {Array.from({ length: 5 }).map((_, index) => (
-                    <Star key={`${item.id}-${index}`} className="h-4 w-4 fill-current" />
-                  ))}
-                  <span className="ml-2 text-xs font-semibold text-amber-600">5.0/5.0</span>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
       {selectedDoctor && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-950/50 px-4 py-6">

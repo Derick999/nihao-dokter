@@ -71,14 +71,7 @@ export default function ArticleDetail() {
               <span className="line-clamp-1 text-gray-700">{article.title}</span>
             </nav>
 
-            <Link
-              to="/artikel"
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-slate-50 hover:text-[#268489]"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Kembali ke Artikel
-            </Link>
-
+            
             <header className="mb-8 border-b border-slate-100 pb-8">
               <span className="inline-flex rounded-full bg-[#EAF7F4] px-3 py-1 text-xs font-semibold text-[#268489]">
                 {article.category}

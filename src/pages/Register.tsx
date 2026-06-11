@@ -1,6 +1,7 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowRight, Save } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { loginUser, getStoredUser } from '../utils/auth';
 
 type RegisterProps = {
@@ -28,7 +29,33 @@ export default function Register({ onAuthSuccess }: RegisterProps) {
     event.preventDefault();
     loginUser(form);
     onAuthSuccess();
-    // Kalau habis edit, balik ke home aja
+  
+    // Konfigurasi ukuran dan posisi notifikasi
+    const toastOptions: any = {
+      position: 'top-center', // Horizontal di tengah
+      duration: 3000,         // Hilang otomatis dalam 3 detik
+      style: {
+        marginTop: '40vh',    // Ngedorong notif ke tengah layar (vertikal)
+        fontSize: '16px',     // Ukuran font lebih besar
+        fontWeight: 'bold',   // Teks ditebalkan
+        padding: '16px 32px', // Ukuran kotak lebih lega (atas-bawah 16px, kiri-kanan 32px)
+        borderRadius: '100px',// Ujung kotak membulat mulus
+        background: '#268489',// Warna background ngikutin tema NihaoDokter
+        color: '#ffffff',     // Warna teks putih
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' // Efek bayangan biar estetik
+      },
+      iconTheme: {
+        primary: '#ffffff',   // Warna icon centang putih
+        secondary: '#268489', // Warna background icon
+      },
+    };
+  
+    if (isEditMode) {
+      toast.success('Profil berhasil di update', toastOptions);
+    } else {
+      toast.success('Akun berhasil dibuat', toastOptions);
+    }
+    
     navigate('/');
   };
 
@@ -46,11 +73,6 @@ export default function Register({ onAuthSuccess }: RegisterProps) {
             {isEditMode ? 'Update data kesehatan Anda' : 'Buat profil kesehatan Anda'}
           </h1>
           
-          <p className="mt-3 text-sm text-gray-500">
-            {isEditMode 
-              ? 'Pastikan data berat dan tinggi badan Anda akurat untuk perhitungan BMI yang tepat.' 
-              : 'Lengkapi data dasar agar konsultasi dokter dan Nihao AI jadi lebih relevan.'}
-          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
