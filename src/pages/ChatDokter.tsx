@@ -330,10 +330,10 @@ export default function ChatDokter() {
       <main className="flex min-h-[calc(100vh-9rem)] flex-grow items-center justify-center bg-[#F7FBFC] px-4 py-12">
         <section className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-12">
           <h1 className="text-3xl font-extrabold leading-tight text-gray-900 sm:text-4xl">
-            Chat Dokter
+            Akses Layanan Konsultasi Dokter Online
           </h1>
           <p className="mt-4 text-base text-gray-600 sm:text-lg">
-            Yuk, masuk dulu! Biar riwayat konsultasimu terjaga rapi dan bisa cek saran dokter kapan aja.
+            Yuk, masuk dulu! Biar riwayat konsultasi dokter onlinemu terjaga rapi dan kamu bisa cek saran dokter kapan aja.
           </p>
           <Link
             to="/login"
@@ -353,9 +353,9 @@ export default function ChatDokter() {
           <BackButton />
         </div>
         <header className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
-          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Chat Dokter</h1>
+          <h1 className="text-2xl font-bold text-gray-900 sm:text-3xl">Konsultasi Dokter Online</h1>
           <p className="mt-2 text-sm text-gray-600 sm:text-base">
-            Hub konsultasi utama untuk memulai sesi baru maupun melanjutkan chat aktif.
+            Pusat layanan konsultasi dokter online untuk memulai sesi baru maupun melanjutkan chat aktif.
           </p>
         </header>
 
