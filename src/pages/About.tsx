@@ -70,7 +70,7 @@ export default function About() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Tentang Perusahaan</h2>
           <p className="mt-4 max-w-4xl text-base leading-relaxed text-gray-600 sm:text-lg">
-            Nihao Dokter adalah ekosistem kesehatan digital terintegrasi yang dirancang untuk menjembatani celah antara layanan medis profesional dan gaya hidup sehat harian. Platform ini tidak hanya berfungsi sebagai media konsultasi, tetapi juga sebagai pendamping kesehatan pribadi yang cerdas, interaktif, dan mudah diakses oleh siapa saja, kapan saja.
+          NihaoDokter adalah ekosistem bisnis kesehatan digital terintegrasi yang dirancang untuk menjembatani celah antara layanan medis profesional, pemenuhan kebutuhan farmasi, dan edukasi gaya hidup sehat harian. Platform ini mengintegrasikan tiga pilar utama secara interaktif: layanan konsultasi medis jarak jauh (telemedicine), distribusi farmasi digital melalui Nihao Shop yang mendukung penebusan resep instan, serta penyediaan informasi kesehatan berbasis data. Dengan pendekatan yang mudah diakses kapan saja dan di mana saja, NihaoDokter berfungsi sebagai platform solutif yang menyederhanakan birokrasi layanan kesehatan tradisional menjadi satu alur digital yang efisien bagi masyarakat modern.
           </p>
         </section>
 
@@ -82,8 +82,8 @@ export default function About() {
               </div>
               <h3 className="text-xl font-bold text-gray-900">Visi</h3>
               <p className="mt-3 text-sm leading-relaxed text-gray-600 sm:text-base">
-                Menjadi platform kesehatan digital terdepan yang mendemokrasikan akses layanan medis berkualitas melalui integrasi teknologi AI dan konsultasi profesional bagi masyarakat luas.
-              </p>
+               
+              </p> Menjadi platform kesehatan digital terdepan yang mendemokrasikan akses layanan medis berkualitas melalui integrasi teknologi AI dan konsultasi profesional bagi masyarakat luas.
             </article>
 
             <article className="rounded-2xl border border-slate-200 bg-[#F8FCFC] p-5">
@@ -92,9 +92,9 @@ export default function About() {
               </div>
               <h3 className="text-xl font-bold text-gray-900">Misi</h3>
               <ul className="mt-3 space-y-2 text-sm leading-relaxed text-gray-600 sm:text-base">
-                <li>Menyediakan layanan konsultasi medis online yang cepat, terpercaya, dan terjangkau.</li>
-                <li>Mengembangkan asisten kesehatan berbasis AI yang responsif untuk membantu diagnosa awal dan edukasi medis.</li>
-                <li>Membangun ekosistem kesehatan digital yang menghubungkan pasien dengan tenaga medis secara efisien tanpa batasan jarak.</li>
+              <li>Menyediakan layanan konsultasi medis online (telemedicine) yang cepat, terpercaya, aman, dan terjangkau bagi seluruh lapisan masyarakat.</li>
+              <li>Mengembangkan asisten kesehatan digital berbasis kecerdasan buatan (Nihao AI) yang responsif guna membantu skrining gejala awal dan penyediaan edukasi medis yang akurat.</li>
+              <li>Membangun ekosistem kesehatan digital terintegrasi yang menghubungkan pasien, tenaga medis, dan layanan kefarmasian (Nihao Shop) secara efisien tanpa batasan jarak.</li>
               </ul>
             </article>
           </div>
