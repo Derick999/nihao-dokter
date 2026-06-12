@@ -1,6 +1,7 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { LogOut, MessageCircleReply, MoreVertical, User, X } from 'lucide-react';
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LogOut, MessageCircleReply, MoreVertical, Plus, User, X } from 'lucide-react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
+import BackButton from '../components/BackButton';
 import { getStoredUser } from '../utils/auth';
 import { doctors } from '../data/doctors';
 import {
@@ -10,11 +11,14 @@ import {
   isSessionStillActive,
 } from '../utils/chatFlow';
 
+type MessageType = 'text' | 'prescription';
+
 type RoomMessage = {
   id: number;
   sender: 'dokter' | 'pasien';
   content: string;
   time: string;
+  type: MessageType;
 };
 
 type DoctorReview = {
@@ -28,6 +32,8 @@ type DoctorProfileDetails = {
   bio: string;
   reviews: DoctorReview[];
 };
+
+const DOCTOR_REPLY_DELAY_MS = 1200;
 
 const symptomDictionary: Array<{ keywords: string[]; response: string }> = [
   {
@@ -44,39 +50,40 @@ const symptomDictionary: Array<{ keywords: string[]; response: string }> = [
   },
 ];
 
-const doctorDetailMap: Record<string, DoctorProfileDetails> = {
-  'Dr. Daniel Paskalist': {
-    education: 'SIP Aktif, Alumni Fakultas Kedokteran UI, 5+ tahun praktik klinis.',
-    bio: 'Fokus pada keluhan umum harian, skrining gejala awal, dan edukasi pasien yang mudah dipahami.',
-    reviews: [
-      { id: 1, text: 'Dokter sangat jelas menjelaskan langkah perawatan di rumah.', author: 'Nadya, 29' },
-      { id: 2, text: 'Respon cepat dan komunikatif, sangat membantu saat butuh cepat.', author: 'Agus, 34' },
-      { id: 3, text: 'Anjuran obat dan pola istirahatnya efektif.', author: 'Siska, 31' },
-    ],
-  },
-  'Dr. Vivi Florencia': {
-    education: 'Spesialis Anak, pengalaman 8 tahun di layanan tumbuh kembang.',
-    bio: 'Mendampingi konsultasi kesehatan anak dengan pendekatan ramah keluarga dan berbasis bukti.',
-    reviews: [
-      { id: 1, text: 'Dokter sabar banget jawab pertanyaan orang tua baru.', author: 'Tika, 27' },
-      { id: 2, text: 'Penjelasan dosis obat anak sangat detail.', author: 'Beni, 35' },
-      { id: 3, text: 'Follow-up jelas, jadi lebih tenang.', author: 'Rani, 30' },
-    ],
-  },
-  'Dr. Kevin Nugraha': {
-    education: 'Spesialis Jantung, 10+ tahun pengalaman klinis dan telekonsultasi.',
-    bio: 'Berfokus pada evaluasi gejala kardiovaskular awal dan rekomendasi perubahan gaya hidup jangka panjang.',
-    reviews: [
-      { id: 1, text: 'Saran pola hidupnya praktis dan bisa langsung diterapkan.', author: 'Riko, 40' },
-      { id: 2, text: 'Penjelasan kondisi jantung jadi lebih mudah dipahami.', author: 'Maya, 38' },
-      { id: 3, text: 'Konsultasi profesional dan menenangkan.', author: 'Dwi, 45' },
-    ],
-  },
-};
+const defaultDoctorReviews: DoctorReview[] = [
+  { id: 1, text: 'Dokter menjelaskan kondisi dengan bahasa yang mudah dipahami.', author: 'Pasien, 30' },
+  { id: 2, text: 'Konsultasi berlangsung nyaman dan responsif.', author: 'Pasien, 26' },
+  { id: 3, text: 'Saran yang diberikan membantu saya menentukan langkah berikutnya.', author: 'Pasien, 34' },
+];
 
 const formatTime = (date: Date) => {
   return date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 };
+
+const containsKeyword = (text: string, keyword: string) => {
+  return text.toLowerCase().includes(keyword);
+};
+
+function PrescriptionCard() {
+  return (
+    <div className="space-y-3">
+      <div className="rounded-xl border-2 border-[#D32F2F] bg-gradient-to-br from-red-50 to-rose-100 p-4 shadow-sm">
+        <p className="text-xs font-bold uppercase tracking-wider text-[#B71C1C]">Resep Digital</p>
+        <div className="mt-2 space-y-1 text-sm font-semibold text-[#7F1D1D]">
+          <p>R/ Paracetamol 500mg</p>
+          <p>Antasida Doen</p>
+        </div>
+        <p className="mt-2 text-xs text-red-800/80">Gunakan sesuai petunjuk dokter. Simpan resep ini untuk pembelian obat.</p>
+      </div>
+      <Link
+        to="/shop"
+        className="inline-flex w-full items-center justify-center rounded-full bg-[#D32F2F] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#B71C1C]"
+      >
+        Tembus Obat di Nihao Shop
+      </Link>
+    </div>
+  );
+}
 
 export default function ChatRoom() {
   const navigate = useNavigate();
@@ -84,36 +91,133 @@ export default function ChatRoom() {
   const [messageInput, setMessageInput] = useState('');
   const [remainingMs, setRemainingMs] = useState(0);
   const [messages, setMessages] = useState<RoomMessage[]>([]);
+  const [showPrescriptionButton, setShowPrescriptionButton] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isEndSessionModalOpen, setIsEndSessionModalOpen] = useState(false);
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const menuRef = useRef<HTMLDivElement | null>(null);
+  const chatViewportRef = useRef<HTMLDivElement | null>(null);
+  const replyTimeoutRefs = useRef<number[]>([]);
 
   const isLoggedIn = Boolean(getStoredUser());
   const isActive = session ? isSessionStillActive(session.startedAt) : false;
+
   const currentDoctor = useMemo(
     () => (session ? doctors.find((doctor) => doctor.name === session.doctorName) ?? null : null),
     [session],
   );
+
+  const doctorAvatar = useMemo(() => {
+    if (!session) {
+      return '';
+    }
+    if (currentDoctor?.img) {
+      return currentDoctor.img;
+    }
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${session.avatarSeed}`;
+  }, [currentDoctor?.img, session]);
+
   const doctorDetails = useMemo<DoctorProfileDetails>(() => {
     if (!session) {
       return { education: '', bio: '', reviews: [] };
     }
-    const mappedDetails = doctorDetailMap[session.doctorName];
-    if (mappedDetails) {
-      return mappedDetails;
-    }
+
     return {
-      education: `${session.doctorName} adalah ${session.specialization} yang berpengalaman melayani konsultasi pasien secara online.`,
+      education: `${session.doctorName}, ${session.doctorTitle} — ${session.specialization}`,
       bio: 'Berfokus pada penanganan awal, edukasi gejala, serta rekomendasi tindak lanjut sesuai kondisi pasien.',
-      reviews: [
-        { id: 1, text: 'Dokter menjelaskan kondisi dengan bahasa yang mudah dipahami.', author: 'Pasien, 30' },
-        { id: 2, text: 'Konsultasi berlangsung nyaman dan responsif.', author: 'Pasien, 26' },
-        { id: 3, text: 'Saran yang diberikan membantu saya menentukan langkah berikutnya.', author: 'Pasien, 34' },
-      ],
+      reviews: defaultDoctorReviews,
     };
   }, [session]);
+
+  const scheduleReply = useCallback((callback: () => void, delayMs: number) => {
+    const timeoutId = window.setTimeout(callback, delayMs);
+    replyTimeoutRefs.current.push(timeoutId);
+  }, []);
+
+  const appendMessage = useCallback((message: RoomMessage) => {
+    setMessages((current) => [...current, message]);
+  }, []);
+
+  const createPrescriptionMessage = useCallback((): RoomMessage => {
+    return {
+      id: Date.now(),
+      sender: 'dokter',
+      content: 'Berikut resep digital untuk keluhan Anda. Silakan tebus obat di Nihao Shop.',
+      time: formatTime(new Date()),
+      type: 'prescription',
+    };
+  }, []);
+
+  const getDoctorReply = useCallback((input: string) => {
+    const normalized = input.toLowerCase();
+    const matched = symptomDictionary.find((item) =>
+      item.keywords.some((keyword) => normalized.includes(keyword)),
+    );
+    if (matched) {
+      return matched.response;
+    }
+    return 'Terima kasih informasinya. Mohon jelaskan sejak kapan gejala dirasakan dan apa yang membuatnya memburuk.';
+  }, []);
+
+  const deliverPrescription = useCallback(() => {
+    appendMessage(createPrescriptionMessage());
+    setShowPrescriptionButton(false);
+  }, [appendMessage, createPrescriptionMessage]);
+
+  const processPatientMessage = useCallback(
+    (rawText: string) => {
+      const trimmed = rawText.trim();
+      if (!trimmed || !isActive || !session) {
+        return;
+      }
+
+      const normalized = trimmed.toLowerCase();
+      const now = new Date();
+
+      appendMessage({
+        id: Date.now(),
+        sender: 'pasien',
+        content: trimmed,
+        time: formatTime(now),
+        type: 'text',
+      });
+
+      if (containsKeyword(normalized, 'resep')) {
+        deliverPrescription();
+        return;
+      }
+
+      if (containsKeyword(normalized, 'perut') || containsKeyword(normalized, 'stomach')) {
+        scheduleReply(() => {
+          appendMessage({
+            id: Date.now(),
+            sender: 'dokter',
+            content: `Baik, ${session.patientName}. Bisa ceritakan lebih detail gejala perut Anda? Sejak kapan dirasakan, lokasinya di mana, dan apakah disertai mual atau muntah?`,
+            time: formatTime(new Date()),
+            type: 'text',
+          });
+          setShowPrescriptionButton(true);
+        }, DOCTOR_REPLY_DELAY_MS);
+        return;
+      }
+
+      appendMessage({
+        id: Date.now() + 1,
+        sender: 'dokter',
+        content: getDoctorReply(trimmed),
+        time: formatTime(new Date(now.getTime() + 1000)),
+        type: 'text',
+      });
+    },
+    [appendMessage, deliverPrescription, getDoctorReply, isActive, scheduleReply, session],
+  );
+
+  useEffect(() => {
+    return () => {
+      replyTimeoutRefs.current.forEach((timeoutId) => window.clearTimeout(timeoutId));
+    };
+  }, []);
 
   useEffect(() => {
     if (!session) {
@@ -123,10 +227,12 @@ export default function ChatRoom() {
     const initialDoctorMessage: RoomMessage = {
       id: 1,
       sender: 'dokter',
-      content: `Halo ${session.patientName}, silakan ceritakan keluhan utama Anda ya.`,
+      content: `Halo, saya ${session.doctorName}. Gejala atau keluhan kesehatan apa yang Anda alami hari ini?`,
       time: formatTime(new Date()),
+      type: 'text',
     };
     setMessages([initialDoctorMessage]);
+    setShowPrescriptionButton(false);
   }, [session?.startedAt]);
 
   useEffect(() => {
@@ -182,6 +288,14 @@ export default function ChatRoom() {
     return () => window.removeEventListener('mousedown', handleOutsideClick);
   }, [isMenuOpen]);
 
+  useEffect(() => {
+    const viewport = chatViewportRef.current;
+    if (!viewport) {
+      return;
+    }
+    viewport.scrollTop = viewport.scrollHeight;
+  }, [messages, showPrescriptionButton]);
+
   const remainingText = useMemo(() => {
     const hours = Math.floor(remainingMs / (60 * 60 * 1000));
     const minutes = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
@@ -189,38 +303,35 @@ export default function ChatRoom() {
     return `${hours}j ${minutes}m ${seconds}d`;
   }, [remainingMs]);
 
-  const getDoctorReply = (input: string) => {
-    const normalized = input.toLowerCase();
-    const matched = symptomDictionary.find((item) => item.keywords.some((keyword) => normalized.includes(keyword)));
-    if (matched) {
-      return matched.response;
-    }
-    return 'Terima kasih informasinya. Mohon jelaskan sejak kapan gejala dirasakan dan apa yang membuatnya memburuk.';
-  };
-
   const handleSendMessage = (event: FormEvent) => {
     event.preventDefault();
     const trimmed = messageInput.trim();
-    if (!trimmed || !isActive) {
+    if (!trimmed) {
       return;
     }
 
-    const now = new Date();
-    const patientMsg: RoomMessage = {
+    processPatientMessage(trimmed);
+    setMessageInput('');
+  };
+
+  const handlePrescriptionRequest = () => {
+    if (!isActive) {
+      return;
+    }
+
+    setShowPrescriptionButton(false);
+
+    appendMessage({
       id: Date.now(),
       sender: 'pasien',
-      content: trimmed,
-      time: formatTime(now),
-    };
-    const doctorMsg: RoomMessage = {
-      id: Date.now() + 1,
-      sender: 'dokter',
-      content: getDoctorReply(trimmed),
-      time: formatTime(new Date(now.getTime() + 1000)),
-    };
+      content: 'Dok, saya ingin minta resep obat untuk keluhan ini.',
+      time: formatTime(new Date()),
+      type: 'text',
+    });
 
-    setMessages((current) => [...current, patientMsg, doctorMsg]);
-    setMessageInput('');
+    scheduleReply(() => {
+      deliverPrescription();
+    }, DOCTOR_REPLY_DELAY_MS);
   };
 
   const handleOpenProfile = () => {
@@ -299,11 +410,20 @@ export default function ChatRoom() {
       <section className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <header className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 bg-[#EAF7F4] px-4 py-3 sm:px-5">
-            <div>
-              <h1 className="text-base font-bold text-gray-900">
-                {session.doctorName}, {session.doctorTitle}
-              </h1>
-              <p className="text-xs text-[#268489]">{session.specialization}</p>
+            <div className="flex min-w-0 flex-1 items-start gap-3">
+              <BackButton />
+              <img
+                src={doctorAvatar}
+                alt={session.doctorName}
+                className="h-11 w-11 shrink-0 rounded-full border border-slate-200 bg-white object-cover"
+                referrerPolicy="no-referrer"
+              />
+              <div className="min-w-0">
+                <h1 className="truncate text-base font-bold text-gray-900">
+                  {session.doctorName}, {session.doctorTitle}
+                </h1>
+                <p className="text-xs text-[#268489]">{session.specialization}</p>
+              </div>
             </div>
             <div className="flex items-start gap-2 sm:items-center">
               <div className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-[#0D503C]">
@@ -342,22 +462,42 @@ export default function ChatRoom() {
             </div>
           </header>
 
-          <div className="h-[420px] space-y-3 overflow-y-auto bg-[#EDF6F8] px-4 py-4 sm:px-5">
+          <div
+            ref={chatViewportRef}
+            className="h-[420px] space-y-3 overflow-y-auto bg-[#EDF6F8] px-4 py-4 sm:px-5"
+          >
             {messages.map((message) => (
               <div key={message.id} className={`flex ${message.sender === 'pasien' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
+                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm shadow-sm ${
                     message.sender === 'pasien'
                       ? 'rounded-br-md bg-[#D7F0EE] text-gray-800'
                       : 'rounded-bl-md bg-white text-gray-700'
                   }`}
                 >
-                  <p>{message.content}</p>
+                  {message.type === 'prescription' ? (
+                    <PrescriptionCard />
+                  ) : (
+                    <p>{message.content}</p>
+                  )}
                   <p className="mt-1 text-right text-[11px] text-gray-500">{message.time}</p>
                 </div>
               </div>
             ))}
           </div>
+
+          {showPrescriptionButton && (
+            <div className="border-t border-slate-100 bg-white px-4 pt-3 sm:px-5">
+              <button
+                type="button"
+                onClick={handlePrescriptionRequest}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#2E7D32] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1B5E20]"
+              >
+                <Plus className="h-4 w-4" />
+                Minta Resep Obat
+              </button>
+            </div>
+          )}
 
           <form onSubmit={handleSendMessage} className="flex gap-2 border-t border-slate-200 bg-white px-4 py-3 sm:px-5">
             <input
@@ -384,9 +524,9 @@ export default function ChatRoom() {
             <div className="flex items-start justify-between border-b border-slate-100 px-5 py-4 sm:px-6">
               <div className="flex items-center gap-3">
                 <img
-                  src={currentDoctor?.img ?? `https://api.dicebear.com/7.x/initials/svg?seed=${session.doctorName}`}
+                  src={doctorAvatar}
                   alt={session.doctorName}
-                  className="h-14 w-14 rounded-full border border-slate-200 bg-slate-100"
+                  className="h-14 w-14 rounded-full border border-slate-200 bg-slate-100 object-cover"
                   referrerPolicy="no-referrer"
                 />
                 <div>
