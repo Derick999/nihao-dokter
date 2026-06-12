@@ -568,44 +568,66 @@ export default function Home({ onOpenChat }: HomeProps) {
         </div>
       )}
 
-      {showSymptomModal && selectedSymptom && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 px-4 py-6">
-          <motion.div
-            initial={{ opacity: 0, y: 14, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl"
-          >
-            <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
-              <div className="inline-flex items-center gap-2 text-[#268489]">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF7F4]">
-                  {selectedSymptom.icon}
-                </span>
-                <h3 className="text-base font-bold text-gray-900">Gejala: {selectedSymptom.name}</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSymptomModal(false)}
-                className="rounded-full p-2 text-gray-500 transition-colors hover:bg-slate-100 hover:text-gray-700"
+      <div
+        className={`fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 px-4 py-6 transition-opacity duration-300 ${
+          showSymptomModal ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
+        }`}
+        aria-hidden={!showSymptomModal}
+        role="dialog"
+        aria-modal={showSymptomModal}
+      >
+        <motion.div
+          initial={false}
+          animate={
+            showSymptomModal
+              ? { opacity: 1, y: 0, scale: 1 }
+              : { opacity: 0, y: 14, scale: 0.98 }
+          }
+          transition={{ duration: 0.2, ease: 'easeOut' }}
+          className="w-full max-w-md rounded-3xl border border-slate-200 bg-white shadow-2xl"
+        >
+          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+            <div className="inline-flex items-center gap-2 text-[#268489]">
+              <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF7F4]">
+                {selectedSymptom?.icon}
+              </span>
+              <h3 className="text-base font-bold text-gray-900">
+                Gejala: {selectedSymptom?.name ?? 'Pilih gejala'}
+              </h3>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowSymptomModal(false)}
+              className="rounded-full p-2 text-gray-500 transition-colors hover:bg-slate-100 hover:text-gray-700"
+              tabIndex={showSymptomModal ? 0 : -1}
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="px-6 py-5">
+            {symptomItems.map((symptom) => (
+              <p
+                key={symptom.id}
+                className={`text-sm leading-relaxed text-gray-600 ${
+                  selectedSymptom?.id === symptom.id ? 'block' : 'hidden'
+                }`}
               >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div className="px-6 py-5">
-              <p className="text-sm leading-relaxed text-gray-600">{selectedSymptom.hint}</p>
-            </div>
-            <div className="flex justify-end border-t border-slate-100 px-6 py-4">
-              <button
-                type="button"
-                onClick={handleFindRelatedDoctor}
-                className="rounded-full bg-[#268489] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1f6f73]"
-              >
-                Cari Dokter Terkait
-              </button>
-            </div>
-          </motion.div>
-        </div>
-      )}
+                {symptom.hint}
+              </p>
+            ))}
+          </div>
+          <div className="flex justify-end border-t border-slate-100 px-6 py-4">
+            <button
+              type="button"
+              onClick={handleFindRelatedDoctor}
+              className="rounded-full bg-[#268489] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1f6f73]"
+              tabIndex={showSymptomModal ? 0 : -1}
+            >
+              Cari Dokter Terkait
+            </button>
+          </div>
+        </motion.div>
+      </div>
     </main>
   );
 }

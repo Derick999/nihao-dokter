@@ -5,7 +5,6 @@
     <priority>1.0</priority>
     <changefreq>daily</changefreq>
   </url>
-  
   <url>
     <loc>https://nihaodokter.web.id/chat-dokter</loc>
     <priority>1.0</priority>
@@ -15,25 +14,32 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://nihaodokter.web.id/riwayat</loc>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://nihaodokter.web.id/artikel</loc>
     <priority>0.8</priority>
   </url>
-  
   <url>
     <loc>https://nihaodokter.web.id/tentang</loc>
     <priority>0.6</priority>
   </url>
-  
+
   <url>
-    <loc>https://nihaodokter.web.id/login</loc>
-    <priority>0.3</priority>
+    <loc>https://nihaodokter.web.id/artikel/cara-meredakan-sakit-kepala</loc>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://nihaodokter.web.id/register</loc>
-    <priority>0.3</priority>
+    <loc>https://nihaodokter.web.id/artikel/pentingnya-menjaga-kesehatan-mental-di-era-digital</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://nihaodokter.web.id/artikel/mitos-dan-fakta-seputar-diet-keto</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://nihaodokter.web.id/artikel/olahraga-ringan-untuk-mengatasi-nyeri-punggung</loc>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://nihaodokter.web.id/artikel/tanda-tanda-tubuh-kekurangan-vitamin-d</loc>
+    <priority>0.7</priority>
   </url>
 </urlset>
