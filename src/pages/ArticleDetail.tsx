@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { Calendar, Clock, ChevronRight, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, ChevronRight, ArrowLeft, Share2, Link2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import articlesData from '../data/articles.json';
 import BackButton from '../components/BackButton';
 
@@ -16,6 +17,68 @@ type Article = {
 };
 
 const articles = articlesData as Article[];
+
+const canUseWebShare = (): boolean =>
+  typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+
+type ShareArticleProps = {
+  title: string;
+};
+
+function ShareArticle({ title }: ShareArticleProps) {
+  const getArticleUrl = () => window.location.href;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getArticleUrl());
+      toast.success('Link artikel berhasil disalin ke clipboard!');
+    } catch {
+      toast.error('Gagal menyalin link. Silakan coba lagi.');
+    }
+  };
+
+  const handleShare = async () => {
+    if (!canUseWebShare()) {
+      await handleCopyLink();
+      return;
+    }
+
+    try {
+      await navigator.share({
+        title,
+        text: title,
+        url: getArticleUrl(),
+      });
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        return;
+      }
+    }
+  };
+
+  return (
+    <div className="mt-5 flex flex-wrap items-center gap-3">
+      {canUseWebShare() && (
+        <button
+          type="button"
+          onClick={handleShare}
+          className="inline-flex items-center gap-2 rounded-full bg-[#268489] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1f6f73]"
+        >
+          <Share2 className="h-4 w-4" />
+          Bagikan
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={handleCopyLink}
+        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:border-[#268489]/30 hover:bg-[#EAF7F4] hover:text-[#268489]"
+      >
+        <Link2 className="h-4 w-4" />
+        Salin Link
+      </button>
+    </div>
+  );
+}
 
 export default function ArticleDetail() {
   const { slug } = useParams<{ slug: string }>();
@@ -79,6 +142,7 @@ export default function ArticleDetail() {
               <h1 className="mt-4 text-3xl font-extrabold leading-tight text-gray-900 sm:text-4xl lg:text-5xl">
                 {article.title}
               </h1>
+              <ShareArticle title={article.title} />
               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
                 <span className="font-medium text-gray-700">NihaoDokter Team</span>
                 <span className="inline-flex items-center">
