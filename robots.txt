@@ -1,13 +1,11 @@
 User-agent: *
-Allow: /
-
-# Sitemap Resmi NihaoDokter
-Sitemap: https://nihaodokter.web.id/sitemap.xml
-
-# Area privat & halaman transaksi aktif yang wajib diblokir dari Google
 Disallow: /login
 Disallow: /register
 Disallow: /riwayat
 Disallow: /pilih-pasien
 Disallow: /payment-success
 Disallow: /chat-room
+Allow: /
+
+# Sitemap Resmi NihaoDokter
+Sitemap: https://nihaodokter.web.id/sitemap.xml

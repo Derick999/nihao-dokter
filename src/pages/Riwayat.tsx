@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Stethoscope } from 'lucide-react';
+import { History, Lock, Package, Stethoscope } from 'lucide-react';
+import { getStoredUser } from '../utils/auth';
 import { getActiveSession, isSessionStillActive } from '../utils/chatFlow';
 import BackButton from '../components/BackButton';
 
@@ -118,6 +119,7 @@ const getIdTimestamp = (id: string) => {
 };
 
 export default function Riwayat() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState<FilterType>('Semua');
   const [activeSessionSnapshot, setActiveSessionSnapshot] = useState(getActiveSession());
   const [storedConsultationItems, setStoredConsultationItems] = useState<ConsultationHistoryItem[]>([]);
@@ -132,6 +134,10 @@ export default function Riwayat() {
     ],
     [],
   );
+
+  useEffect(() => {
+    setIsLoggedIn(Boolean(getStoredUser()));
+  }, []);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -246,6 +252,34 @@ export default function Riwayat() {
     }
     return allItems.filter((item) => item.type === selectedFilter);
   }, [allItems, selectedFilter]);
+
+  if (!isLoggedIn) {
+    return (
+      <main className="flex min-h-[calc(100vh-9rem)] flex-grow items-center justify-center bg-[#F7FBFC] px-4 py-12">
+        <section className="w-full max-w-2xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-sm sm:p-12">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#EAF7F4] text-[#268489]">
+            <History className="h-8 w-8" />
+          </div>
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-gray-600">
+            <Lock className="h-3.5 w-3.5" />
+            Area Terproteksi
+          </div>
+          <h2 className="text-2xl font-extrabold leading-tight text-gray-900 sm:text-3xl">
+            Akses Riwayat Konsultasi Dokter & Catatan Medis Online
+          </h2>
+          <p className="mt-4 text-base text-gray-600 sm:text-lg">
+            Silakan masuk ke akun Anda untuk melihat kembali seluruh riwayat konsultasi dokter dan rangkuman resep obat digital Anda dengan aman.
+          </p>
+          <Link
+            to="/login"
+            className="mt-8 inline-flex items-center justify-center rounded-full bg-[#268489] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1f6f73]"
+          >
+            Login / Register
+          </Link>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-[calc(100vh-9rem)] flex-grow bg-[#F7FBFC] py-8 sm:py-10">

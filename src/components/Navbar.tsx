@@ -30,7 +30,7 @@ export default function Navbar({ currentUser, onLogout }: NavbarProps) {
               <img src="/Nihao Dokters.png" alt="Logo NihaoDokter" className="h-10 w-auto" />
               <span className="font-bold text-2xl tracking-tight hidden sm:block">
                 <span className="text-[#D32F2F]">Nihao</span>
-                <span className="text-[#0D503C]">Dokter</span>
+                <span className="text-[#268489]">Dokter</span>
               </span>
             </Link>
 

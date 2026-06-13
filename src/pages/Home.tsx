@@ -275,7 +275,7 @@ export default function Home({ onOpenChat }: HomeProps) {
                 <span className="text-[#268489]">Gak Pake Antre.</span>
               </h1>
               <p className="mb-10 max-w-2xl text-base text-gray-600 sm:text-lg md:text-xl">
-                Konsultasi aman, transaksi terjamin. Solusi kesehatan digital No. 1 untuk masa depan Indonesia.
+                Konsultasi dokter online aman dan tepercaya, sebagai solusi kesehatan No.1 untuk Indonesia
               </p>
 
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">

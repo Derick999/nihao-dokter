@@ -7,10 +7,14 @@ type FooterProps = {
 
 export default function Footer({ onOpenChat }: FooterProps) {
   return (
-    <footer className="bg-white border-t border-gray-200 mt-auto">
+    <footer className="bg-white border-t border-gray-200 mt-auto text-gray-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-5">
-          <div className="col-span-1 md:col-span-1">
+        {/* Rombak Grid Menjadi 12 Kolom Biar Pembagian 3 Blok Proporsional */}
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-12">
+          
+          {/* KOLOM 1: PROFILE, LOGO ASLI, & SOSMED REAL LINKS (md:col-span-5) */}
+          <div className="md:col-span-5">
+            {/* LOGO ASLI LU DIKEMBALIKAN UTUH TANPA PERUBAHAN */}
             <Link to="/" className="flex items-center shrink-0 mb-4">
               <div className="w-8 h-8 bg-[#D32F2F] rounded-full flex items-center justify-center mr-2">
                 <Stethoscope className="w-5 h-5 text-white" />
@@ -20,40 +24,44 @@ export default function Footer({ onOpenChat }: FooterProps) {
                 <span className="text-[#268489]">Dokter</span>
               </span>
             </Link>
-            <p className="text-gray-500 text-sm mb-4">
-              Platform kesehatan terpercaya untuk konsultasi dokter, beli obat, dan edukasi kesehatan.
+            
+            <p className="text-gray-500 text-sm mb-4 max-w-sm">
+              Platform kesehatan terpercaya untuk konsultasi dokter online, beli obat secara praktis, dan edukasi kesehatan terkurasi.
             </p>
+            
+            {/* SOSMED DIARAHKAN KE WEB UTAMA TERKAIT */}
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-[#2E7D32]">
+              <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#2E7D32] transition-colors">
                 <span className="sr-only">Facebook</span>
                 <Facebook className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#2E7D32]">
+              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#2E7D32] transition-colors">
                 <span className="sr-only">Instagram</span>
                 <Instagram className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#2E7D32]">
-                <span className="sr-only">Twitter</span>
+              <a href="https://x.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#2E7D32] transition-colors">
+                <span className="sr-only">X (Twitter)</span>
                 <Twitter className="h-6 w-6" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#2E7D32]">
+              <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#2E7D32] transition-colors">
                 <span className="sr-only">LinkedIn</span>
                 <Linkedin className="h-6 w-6" />
               </a>
             </div>
           </div>
 
-          <div>
+          {/* KOLOM 2: PARTNER KAMI - TETAP ADALAH KUNCI BACKLINK (md:col-span-4) */}
+          <div className="md:col-span-4">
             <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
               Partner Kami
             </h3>
-            <ul className="space-y-4">
+            <ul className="space-y-3">
               <li>
                 <a
                   href="https://www.denifferscookies.web.id"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                  className="text-sm text-gray-500 transition-colors hover:text-[#268489]"
                 >
                   Deniffer&apos;s Cookies
                 </a>
@@ -63,7 +71,7 @@ export default function Footer({ onOpenChat }: FooterProps) {
                   href="https://www.zaffrino.site/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                  className="text-sm text-gray-500 transition-colors hover:text-[#268489]"
                 >
                   Zaffrino
                 </a>
@@ -73,7 +81,7 @@ export default function Footer({ onOpenChat }: FooterProps) {
                   href="https://sites.google.com/view/pawbieast/beranda"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                  className="text-sm text-gray-500 transition-colors hover:text-[#268489]"
                 >
                   Pawbieast
                 </a>
@@ -83,7 +91,7 @@ export default function Footer({ onOpenChat }: FooterProps) {
                   href="https://www.inirasa.biz.id/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                  className="text-sm text-gray-500 transition-colors hover:text-[#268489]"
                 >
                   Inirasa
                 </a>
@@ -93,7 +101,7 @@ export default function Footer({ onOpenChat }: FooterProps) {
                   href="https://kicaucafe.com/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-base text-gray-500 transition-colors hover:text-[#268489]"
+                  className="text-sm text-gray-500 transition-colors hover:text-[#268489]"
                 >
                   Kicau Cafe
                 </a>
@@ -101,96 +109,40 @@ export default function Footer({ onOpenChat }: FooterProps) {
             </ul>
           </div>
 
-          <div>
+          {/* KOLOM 3: GABUNGAN PERUSAHAAN & LEGAL MENJADI "LAINNYA" (md:col-span-3) */}
+          <div className="md:col-span-3">
             <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
-              Layanan
+              Lainnya
             </h3>
-            <ul className="space-y-4">
+            <ul className="space-y-3 text-sm">
               <li>
-                <button
-                  type="button"
-                  onClick={() =>
-                    onOpenChat({
-                      name: 'Dr. Sarah',
-                      img: 'https://ui-avatars.com/api/?name=Dr.+Sarah&background=E6F4F1&color=268489&bold=true',
-                    })
-                  }
-                  className="text-base text-gray-500 hover:text-[#2E7D32]"
-                >
-                  Chat Dokter
-                </button>
-              </li>
-              <li>
-                <Link to="/shop" className="text-base text-gray-500 hover:text-[#2E7D32]">
-                  Apotek Online
-                </Link>
-              </li>
-              <li>
-                <Link to="/artikel" className="text-base text-gray-500 hover:text-[#2E7D32]">
-                  Artikel Kesehatan
-                </Link>
-              </li>
-              <li>
-                <a href="#" className="text-base text-gray-500 hover:text-[#2E7D32]">
-                  Buat Janji RS
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
-              Perusahaan
-            </h3>
-            <ul className="space-y-4">
-              <li>
-                <Link to="/tentang-kami" className="text-base text-gray-500 hover:text-[#2E7D32]">
+                <Link to="/tentang-kami" className="text-gray-500 transition-colors hover:text-[#268489]">
                   Tentang Kami
                 </Link>
               </li>
               <li>
-                <a href="#" className="text-base text-gray-500 hover:text-[#2E7D32]">
+                <a href="#" className="text-gray-500 transition-colors hover:text-[#268489]">
                   Karir
                 </a>
               </li>
               <li>
-                <a href="#" className="text-base text-gray-500 hover:text-[#2E7D32]">
+                <a href="#" className="text-gray-500 transition-colors hover:text-[#268489]">
                   Hubungi Kami
                 </a>
               </li>
-              <li>
-                <a href="#" className="text-base text-gray-500 hover:text-[#2E7D32]">
-                  Mitra
+              <li className="pt-2 border-t border-gray-100 mt-2">
+                <a href="#" className="text-gray-500 transition-colors hover:text-[#268489] font-medium">
+                  Syarat & Ketentuan
                 </a>
               </li>
             </ul>
           </div>
 
-          <div>
-            <h3 className="text-sm font-semibold text-gray-900 tracking-wider uppercase mb-4">
-              Legal
-            </h3>
-            <ul className="space-y-4">
-              <li>
-                <a href="#" className="text-base text-gray-500 hover:text-[#2E7D32]">
-                  Syarat & Ketentuan
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-base text-gray-500 hover:text-[#2E7D32]">
-                  Kebijakan Privasi
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-base text-gray-500 hover:text-[#2E7D32]">
-                  Kebijakan Cookie
-                </a>
-              </li>
-            </ul>
-          </div>
         </div>
-        <div className="mt-12 border-t border-gray-200 pt-8">
-          <p className="text-base text-gray-400 xl:text-center">
+
+        {/* BOTTOM COPYRIGHT */}
+        <div className="mt-12 border-t border-gray-200 pt-8 text-center md:text-left">
+          <p className="text-sm text-gray-400">
             &copy; {new Date().getFullYear()} NihaoDokter. All rights reserved.
           </p>
         </div>

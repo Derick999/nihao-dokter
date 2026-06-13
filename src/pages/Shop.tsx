@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Minus, Plus, ShoppingCart, Star, Trash2, WalletCards, X } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { CheckCircle2, Lock, Minus, Plus, ShoppingCart, Star, Trash2, WalletCards, X } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
+import { getStoredUser } from '../utils/auth';
 import qrisImage from '../assets/images/my-qris.png';
 
 type Product = {
@@ -58,11 +59,17 @@ export default function Shop() {
   ];
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [showQRISModal, setShowQRISModal] = useState(false);
   const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(Boolean(getStoredUser()));
+  }, []);
 
   useEffect(() => {
     const storedCart = localStorage.getItem('nihao_cart_items');
@@ -96,7 +103,19 @@ export default function Shop() {
   const formatRupiah = (amount: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
 
+  const requireAuthForPurchase = () => {
+    if (isLoggedIn) {
+      return true;
+    }
+    setShowLoginPrompt(true);
+    return false;
+  };
+
   const addToCart = (product: Product) => {
+    if (!requireAuthForPurchase()) {
+      return;
+    }
+
     setCartItems((current) => {
       const existingItem = current.find((item) => item.product.id === product.id);
       if (existingItem) {
@@ -144,7 +163,7 @@ export default function Shop() {
   }, [showSuccessNotification]);
 
   const completeOrder = () => {
-    if (cartItems.length === 0) {
+    if (!requireAuthForPurchase() || cartItems.length === 0) {
       return;
     }
 
@@ -199,7 +218,7 @@ export default function Shop() {
   };
 
   const handleCheckoutPayment = () => {
-    if (!selectedPaymentMethod || cartItems.length === 0) {
+    if (!requireAuthForPurchase() || !selectedPaymentMethod || cartItems.length === 0) {
       return;
     }
 
@@ -220,7 +239,7 @@ export default function Shop() {
         <div className="mb-12 flex flex-col gap-5 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <div>
             <h1 className="mb-4 text-3xl font-extrabold text-gray-900 sm:text-4xl">
-              Apotek <span className="text-[#268489]">Online</span>
+              Toko Obat Online & Layanan Farmasi Digital
             </h1>
             <p className="max-w-2xl text-lg text-gray-500">
               Beli obat dan vitamin terpercaya dengan mudah. Pengiriman cepat langsung ke rumah Anda.
@@ -346,6 +365,9 @@ export default function Shop() {
               <button
                 type="button"
                 onClick={() => {
+                  if (!requireAuthForPurchase()) {
+                    return;
+                  }
                   setSelectedPaymentMethod(null);
                   setShowQRISModal(false);
                   setIsCheckoutOpen(true);
@@ -449,6 +471,35 @@ export default function Shop() {
                 className="rounded-full bg-[#268489] px-5 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-[#1f6f73]"
               >
                 Saya Sudah Bayar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLoginPrompt && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/55 px-4 py-6">
+          <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 text-center shadow-2xl sm:p-8">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-[#EAF7F4] text-[#268489]">
+              <Lock className="h-7 w-7" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">Login Diperlukan</h2>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600 sm:text-base">
+              Silakan masuk ke akun Anda untuk beli obat resep dokter online secara aman.
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center rounded-full bg-[#268489] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#1f6f73]"
+              >
+                Login / Register
+              </Link>
+              <button
+                type="button"
+                onClick={() => setShowLoginPrompt(false)}
+                className="inline-flex items-center justify-center rounded-full border border-slate-300 px-6 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100"
+              >
+                Tutup
               </button>
             </div>
           </div>
